@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indemnité légale de licenciement — Outils Paie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     DESIGN SYSTEM
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  :root {
+    --bg:       #0a0c12;
+    --surface:  #111420;
+    --surface2: #181c2e;
+    --border:   #1f2540;
+    --border2:  #2a3060;
+    --accent:   #3d6fff;
+    --gold:     #f0b429;
+    --green:    #2dd4a0;
+    --red:      #ff5c5c;
+    --text:     #dde3f5;
+    --muted:    #6b7299;
+    --mono:     'DM Mono', monospace;
+    --display:  'Syne', sans-serif;
+    --body:     'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* ── BARRE SUPÉRIEURE ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: .7rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-brand {
+    font-family: var(--display);
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .topbar-tag {
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: .25rem .6rem;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 3rem 1.5rem 2rem;
+    max-width: 760px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--accent);
+    background: rgba(61,111,255,.08);
+    border: 1px solid rgba(61,111,255,.25);
+    padding: .3rem .7rem;
+    border-radius: 2px;
+    margin-bottom: 1.2rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: .6rem;
+    letter-spacing: -.02em;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-sub {
+    font-size: .88rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 560px;
+  }
+
+  /* ── ALERTE ERREUR ── */
+  .error-banner {
+    display: none;
+    margin: 0 1.5rem 1.5rem;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+    background: rgba(255,92,92,.08);
+    border: 1px solid rgba(255,92,92,.3);
+    border-left: 3px solid var(--red);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    font-size: .85rem;
+    color: var(--red);
+    line-height: 1.6;
+  }
+
+  .error-banner.visible { display: block; }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1rem;
+    animation: fadeUp .4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(2) { animation-delay: .08s; }
+  .card:nth-child(3) { animation-delay: .16s; }
+  .card:nth-child(4) { animation-delay: .24s; }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: .62rem;
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    padding-bottom: .6rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .card-label::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ── ROWS ── */
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: .5rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+    font-size: .88rem;
+  }
+
+  .row:last-child { border-bottom: none; }
+
+  .row-label { color: var(--muted); flex-shrink: 0; }
+
+  .row-value {
+    font-family: var(--mono);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .row-value.gold { color: var(--gold); font-weight: 600; }
+  .row-value.green { color: var(--green); }
+
+  /* ── FORMULE BLOCKS ── */
+  .formula {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .9rem 1.2rem;
+    margin-bottom: .7rem;
+  }
+
+  .formula-title {
+    font-family: var(--mono);
+    font-size: .6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: .5rem;
+  }
+
+  .formula-line {
+    font-family: var(--mono);
+    font-size: .82rem;
+    line-height: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .2rem;
+  }
+
+  .f-num { color: var(--accent); }
+  .f-op  { color: var(--muted); }
+  .f-res { color: var(--gold); font-weight: 600; font-size: .9rem; }
+  .f-zero { color: var(--muted); font-style: italic; }
+
+  /* ── RÉSULTAT FINAL ── */
+  .result-card {
+    background: linear-gradient(135deg, #0d1535 0%, #111420 60%, #0a0f20 100%);
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    padding: 2rem 1.6rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp .4s .32s ease both;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(61,111,255,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .result-label {
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--accent);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .6rem;
+  }
+
+  .result-amount {
+    font-family: var(--display);
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: -.03em;
+    line-height: 1;
+    margin-bottom: .5rem;
+  }
+
+  .result-detail {
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--muted);
+    margin-top: .4rem;
+  }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    border-left: 3px solid var(--gold);
+    background: rgba(240,180,41,.04);
+    border-radius: 0 4px 4px 0;
+    padding: .9rem 1.2rem;
+    font-size: .78rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    animation: fadeUp .4s .4s ease both;
+  }
+
+  .disclaimer strong { color: var(--gold); }
+  .disclaimer a { color: var(--accent); text-decoration: none; }
+  .disclaimer a:hover { text-decoration: underline; }
+
+  /* ── FOOTER ── */
+  footer {
+    font-family: var(--mono);
+    font-size: .62rem;
+    color: var(--muted);
+    text-align: center;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    line-height: 2.2;
+    animation: fadeUp .4s .48s ease both;
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .topbar { padding: .6rem 1rem; }
+    .hero { padding: 2rem 1rem 1.5rem; }
+    .main { padding: 0 1rem 3rem; }
+    .card { padding: 1.1rem 1.1rem; }
+    .row { font-size: .82rem; }
+    .formula-line { font-size: .76rem; }
+    .result-card { padding: 1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">⚖ Outils Paie France</div>
+  <div class="topbar-tag">/licenciement</div>
+</div>
+
+<!-- ERREUR (affichée si paramètres invalides) -->
+<div class="error-banner" id="errorBanner"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Calcul légal · Art. R1234-1 à R1234-5 C.trav.</div>
+  <h1>Indemnité légale de <span>licenciement</span></h1>
+  <p class="hero-sub">CDI · Calcul du plancher légal minimal. Vérifiez toujours votre convention collective.</p>
+</div>
+
+<!-- CONTENU PRINCIPAL -->
+<div class="main" id="mainContent">
+
+  <!-- DONNÉES SALARIÉ -->
+  <div class="card" id="cardDonnees">
+    <div class="card-label">Données salarié</div>
+    <div class="row">
+      <span class="row-label">Date d'entrée</span>
+      <span class="row-value" id="o-entree">—</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Fin de contrat (fin préavis)</span>
+      <span class="row-value" id="o-fin">—</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Ancienneté totale</span>
+      <span class="row-value gold" id="o-anc">—</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Sal. brut moyen 12 mois</span>
+      <span class="row-value" id="o-s12">—</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Sal. brut moyen 3 mois</span>
+      <span class="row-value" id="o-s3">—</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Salaire de référence retenu</span>
+      <span class="row-value gold" id="o-sref">—</span>
+    </div>
+  </div>
+
+  <!-- DÉTAIL DU CALCUL -->
+  <div class="card" id="cardCalc">
+    <div class="card-label">Détail du calcul</div>
+
+    <div class="formula" id="f-t1">
+      <div class="formula-title">Tranche ≤ 10 ans — 1/4 de mois par année</div>
+      <div class="formula-line">
+        <span class="f-num" id="f-t1-sref"></span>
+        <span class="f-op">×</span>
+        <span class="f-op">1/4</span>
+        <span class="f-op">×</span>
+        <span class="f-num" id="f-t1-ann"></span>
+        <span class="f-op">=</span>
+        <span class="f-res" id="f-t1-res"></span>
+      </div>
+    </div>
+
+    <div class="formula" id="f-t2">
+      <div class="formula-title">Tranche > 10 ans — 1/3 de mois par année</div>
+      <div class="formula-line" id="f-t2-line"></div>
+    </div>
+
+    <div class="formula">
+      <div class="formula-title">Mois incomplets — prorata</div>
+      <div class="formula-line" id="f-pro-line"></div>
+    </div>
+  </div>
+
+  <!-- RÉSULTAT -->
+  <div class="result-card">
+    <div class="result-label">Indemnité légale minimale</div>
+    <div class="result-amount" id="o-total">—</div>
+    <div class="result-detail" id="o-detail">—</div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <strong>⚠ Indemnité légale uniquement.</strong> Ce montant est le plancher légal minimal (Art. R1234-1 C.trav.).
+    Votre convention collective peut prévoir une formule plus favorable — vérifiez systématiquement avant d'établir le solde de tout compte.<br><br>
+    <strong>Source :</strong> <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F987" target="_blank">service-public.fr/F987</a>
+    · Vérifié : <span id="o-dateverif"></span>
+    · Cet outil ne constitue pas un conseil juridique.
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Outils Paie France · Propulsé par AFPRH / OPTIMYZ HR<br>
+  <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F987" target="_blank">service-public.fr/F987</a>
+  · Art. R1234-1 à R1234-5 du Code du travail
+</footer>
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   VARIABLES LÉGALES — ZONE DE MISE À JOUR
+   Modifier uniquement cette section lors d'une
+   évolution législative ou réglementaire.
+   Dernière vérification : janvier 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const LEGAL = {
+  dateVerif       : "janvier 2026",
+  source          : "Art. R1234-1 à R1234-5 C.trav.",
+  ancMinMois      : 8,       // ancienneté minimale en mois pour ouvrir droit
+  tauxT1          : 1/4,     // taux tranche ≤ 10 ans (1/4 de mois par année)
+  tauxT2          : 1/3,     // taux tranche > 10 ans (1/3 de mois par année)
+  seuilTranche    : 10,      // seuil en années entre T1 et T2
+};
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+
+/* ── UTILITAIRES ── */
+
+// Nettoie et parse un nombre (gère "10 000,50", "10000.50", "10000 €", etc.)
+function parseNum(s) {
+  if (typeof s === 'number') return s;
+  var clean = String(s)
+    .replace(/\s/g, '')
+    .replace(/€/g, '')
+    .replace(/,/g, '.');
+  // Supprimer les points de milliers (ex: "10.000.50" → garder dernier point)
+  var parts = clean.split('.');
+  if (parts.length > 2) {
+    clean = parts.slice(0, -1).join('') + '.' + parts[parts.length - 1];
+  }
+  var n = parseFloat(clean);
+  return isNaN(n) ? null : n;
+}
+
+// Parse une date JJ/MM/AAAA ou AAAA-MM-JJ
+function parseDate(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  var m;
+  // Format JJ/MM/AAAA ou JJ-MM-AAAA
+  m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  // Format AAAA-MM-JJ
+  m = s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})$/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  return null;
+}
+
+// Formate un nombre en euros FR
+function fmt(n) {
+  return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+// Formate une durée en années/mois
+function fmtDuree(annees, mois) {
+  var s = '';
+  if (annees > 0) s += annees + ' an' + (annees > 1 ? 's' : '');
+  if (mois > 0)   s += (s ? ' ' : '') + mois + ' mois';
+  return s || '< 1 mois';
+}
+
+// Affiche une erreur et cache le contenu
+function showError(msg) {
+  var b = document.getElementById('errorBanner');
+  b.innerHTML = '<strong>⚠ Données manquantes ou incorrectes</strong><br>' + msg;
+  b.classList.add('visible');
+  document.getElementById('mainContent').style.opacity = '.25';
+  document.getElementById('mainContent').style.pointerEvents = 'none';
+}
+
+
+/* ── LECTURE DES PARAMÈTRES URL ── */
+var params = new URLSearchParams(window.location.search);
+
+// Accepter plusieurs noms de paramètres (robustesse multi-LLM)
+function getParam() {
+  var keys = Array.from(arguments);
+  for (var i = 0; i < keys.length; i++) {
+    var v = params.get(keys[i]);
+    if (v !== null && v.trim() !== '') return v.trim();
+  }
+  return null;
+}
+
+var rawDE  = getParam('de', 'date_entree', 'entree', 'dateentree');
+var rawDF  = getParam('df', 'date_fin', 'fin', 'datefin');
+var rawS12 = getParam('s12', 'sal12', 'sal_12', 'salaire12');
+var rawS3  = getParam('s3', 'sal3', 'sal_3', 'salaire3');
+
+
+/* ── VALIDATION ── */
+var errors = [];
+
+if (!rawDE)  errors.push("Paramètre manquant : <code>de</code> (date d'entrée)");
+if (!rawDF)  errors.push("Paramètre manquant : <code>df</code> (date de fin de contrat)");
+if (!rawS12) errors.push("Paramètre manquant : <code>s12</code> (salaire moyen 12 mois)");
+if (!rawS3)  errors.push("Paramètre manquant : <code>s3</code> (salaire moyen 3 mois)");
+
+if (errors.length > 0) {
+  showError(errors.join('<br>') + '<br><br>Relance la commande <strong>/licenciement</strong> dans ton assistant IA.');
+} else {
+
+  var dateEntree = parseDate(rawDE);
+  var dateFin    = parseDate(rawDF);
+  var sal12      = parseNum(rawS12);
+  var sal3       = parseNum(rawS3);
+
+  if (!dateEntree) errors.push("Date d'entrée invalide : <strong>" + rawDE + "</strong> — format attendu JJ/MM/AAAA");
+  if (!dateFin)    errors.push("Date de fin invalide : <strong>" + rawDF + "</strong> — format attendu JJ/MM/AAAA");
+  if (sal12 === null || sal12 <= 0) errors.push("Salaire 12 mois invalide : <strong>" + rawS12 + "</strong>");
+  if (sal3  === null || sal3  <= 0) errors.push("Salaire 3 mois invalide : <strong>" + rawS3 + "</strong>");
+  if (dateEntree && dateFin && dateFin <= dateEntree) errors.push("La date de fin doit être postérieure à la date d'entrée.");
+
+  if (errors.length > 0) {
+    showError(errors.join('<br>') + '<br><br>Relance la commande <strong>/licenciement</strong> et corrige les données.');
+  } else {
+
+    /* ── CALCULS ── */
+
+    // Ancienneté en mois complets
+    var moisTotal = (dateFin.getFullYear() - dateEntree.getFullYear()) * 12
+                  + (dateFin.getMonth() - dateEntree.getMonth());
+    if (dateFin.getDate() < dateEntree.getDate()) moisTotal--;
+
+    var anneesCompl = Math.floor(moisTotal / 12);
+    var moisCompl   = moisTotal % 12;
+
+    // Salaire de référence = le plus avantageux
+    var sRef = Math.max(sal12, sal3);
+    var sRefLabel = sal3 >= sal12 ? '(moy. 3 mois)' : '(moy. 12 mois)';
+
+    // Tranche 1 : ≤ 10 ans
+    var t1Annees = Math.min(anneesCompl, LEGAL.seuilTranche);
+    var t1 = sRef * LEGAL.tauxT1 * t1Annees;
+
+    // Tranche 2 : > 10 ans
+    var t2Annees = Math.max(anneesCompl - LEGAL.seuilTranche, 0);
+    var t2 = sRef * LEGAL.tauxT2 * t2Annees;
+
+    // Prorata mois incomplets
+    var pro = 0;
+    if (moisCompl > 0) {
+      var tauxPro = anneesCompl < LEGAL.seuilTranche ? LEGAL.tauxT1 : LEGAL.tauxT2;
+      pro = sRef * tauxPro * (moisCompl / 12);
+    }
+
+    var total = t1 + t2 + pro;
+
+    /* ── AFFICHAGE ── */
+
+    // Données salarié
+    document.getElementById('o-entree').textContent = rawDE;
+    document.getElementById('o-fin').textContent    = rawDF;
+    document.getElementById('o-anc').textContent    = fmtDuree(anneesCompl, moisCompl);
+    document.getElementById('o-s12').textContent    = fmt(sal12);
+    document.getElementById('o-s3').textContent     = fmt(sal3);
+    document.getElementById('o-sref').textContent   = fmt(sRef) + ' ' + sRefLabel;
+    document.getElementById('o-dateverif').textContent = LEGAL.dateVerif;
+
+    // Formule T1
+    document.getElementById('f-t1-sref').textContent = fmt(sRef);
+    document.getElementById('f-t1-ann').textContent  = t1Annees + ' an' + (t1Annees > 1 ? 's' : '');
+    document.getElementById('f-t1-res').textContent  = fmt(t1);
+
+    // Formule T2
+    var t2Line = document.getElementById('f-t2-line');
+    if (t2Annees > 0) {
+      t2Line.innerHTML =
+        '<span class="f-num">' + fmt(sRef) + '</span>' +
+        '<span class="f-op">×</span>' +
+        '<span class="f-op">1/3</span>' +
+        '<span class="f-op">×</span>' +
+        '<span class="f-num">' + t2Annees + ' an' + (t2Annees > 1 ? 's' : '') + '</span>' +
+        '<span class="f-op">=</span>' +
+        '<span class="f-res">' + fmt(t2) + '</span>';
+    } else {
+      t2Line.innerHTML = '<span class="f-zero">Non applicable (ancienneté ≤ 10 ans)</span>';
+    }
+
+    // Prorata
+    var proLine = document.getElementById('f-pro-line');
+    if (moisCompl > 0) {
+      var tauxLabel = anneesCompl < LEGAL.seuilTranche ? '1/4' : '1/3';
+      proLine.innerHTML =
+        '<span class="f-num">' + fmt(sRef) + '</span>' +
+        '<span class="f-op">×</span>' +
+        '<span class="f-op">' + tauxLabel + '</span>' +
+        '<span class="f-op">×</span>' +
+        '<span class="f-num">(' + moisCompl + ' mois ÷ 12)</span>' +
+        '<span class="f-op">=</span>' +
+        '<span class="f-res">' + fmt(pro) + '</span>';
+    } else {
+      proLine.innerHTML = '<span class="f-zero">Aucun mois incomplet</span>';
+    }
+
+    // Résultat
+    document.getElementById('o-total').textContent  = fmt(total);
+    document.getElementById('o-detail').textContent =
+      fmt(t1) + ' + ' + fmt(t2) + ' + ' + fmt(pro) + ' = ' + fmt(total);
+
+  }
+}
+</script>
+</body>
+</html>
