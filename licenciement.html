@@ -1,9 +1,20 @@
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  OUTILS PAIE FRANCE · /licenciement                 ║
+  ║  Version : 4.0                                      ║
+  ║  Dernière mise à jour : mai 2026                    ║
+  ║  Auteur : AFPRH / OPTIMYZ HR                        ║
+  ║  Source légale : Art. R1234-1 à R1234-5 C.trav.     ║
+  ║                  Art. L1226-14 C.trav.              ║
+  ║  Vérification légale : janvier 2026                 ║
+  ╚══════════════════════════════════════════════════════╝
+-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indemnité légale de licenciement1 — Outils Paie</title>
+<title>Indemnité légale de licenciement — Outils Paie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -153,7 +164,7 @@ footer a{color:var(--a);text-decoration:none}
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem">
       <div class="form-group">
-        <label class="form-label"><strong>Date d'entrée</strong> dans l'entreprise</label>
+        <label class="form-label"><strong>Date d'ancienneté</strong> dans l'entreprise</label>
         <input class="form-input" type="date" id="i-entree" placeholder="JJ/MM/AAAA">
       </div>
       <div class="form-group">
@@ -184,19 +195,69 @@ footer a{color:var(--a);text-decoration:none}
     <div class="mode-tabs">
       <button class="mode-tab active" id="tab-auto" onclick="switchMode('auto')">Saisie mois par mois (recommandé)</button>
       <button class="mode-tab" id="tab-manuel" onclick="switchMode('manuel')">Saisie directe des moyennes</button>
+      <button class="mode-tab" id="tab-arret" onclick="switchMode('arret')">Arrêt maladie / AT-MP en cours</button>
+    </div>
+    <!-- MODE ARRÊT : période personnalisée -->
+    <div id="mode-arret" style="display:none">
+      <div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.25);border-radius:4px;padding:.9rem 1.2rem;margin-bottom:1rem;font-size:.8rem;color:var(--m);line-height:1.7">
+        <strong style="color:var(--gold)">⚠ Salarié en arrêt au moment du licenciement</strong><br>
+        La période de référence à retenir est celle des 12 (ou 3) mois <strong>précédant le début de l'arrêt de travail</strong> (Cass. soc. 23.05.2017 n°15-22223).<br>
+        Saisissez la date de début d'arrêt : le tableau se génère automatiquement sur cette base.
+      </div>
+      <div class="form-group" style="max-width:220px">
+        <label class="form-label"><strong>Date de début de l'arrêt de travail</strong></label>
+        <input class="form-input" type="date" id="i-arret" placeholder="JJ/MM/AAAA">
+        <div style="font-size:.7rem;color:var(--m);margin-top:.3rem">Les 12 mois précédant cette date seront utilisés comme période de référence</div>
+      </div>
+      <div id="mode-arret-grille" style="display:none">
+        <div class="note-excl" style="margin-top:.8rem">
+          <strong>⚠ Reconstituer le salaire brut</strong> pour tout mois où le salarié était en arrêt pendant cette période de référence, comme s'il avait été présent.
+        </div>
+        <div style="overflow-x:auto">
+          <table class="sal-grid">
+            <thead>
+              <tr>
+                <th>Mois</th>
+                <th>Salaire brut réel<br><span style="font-weight:400;color:var(--m)">(reconstitué si absence)</span></th>
+                <th style="color:var(--gold)">Salaire corrigé ★<br><span style="font-weight:400;color:var(--m)">3 derniers mois — si prime &gt; 3 mois</span></th>
+              </tr>
+            </thead>
+            <tbody id="sal-tbody-arret"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:.8rem;display:flex;gap:1rem;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px">
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--m);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.08em">Moy. 12 mois calculée</div>
+            <div style="font-family:var(--mono);font-size:1rem;color:var(--t)" id="calc-moy12-arret">—</div>
+          </div>
+          <div style="flex:1;min-width:160px">
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--m);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.08em">Moy. 3 mois calculée</div>
+            <div style="font-family:var(--mono);font-size:1rem;color:var(--t)" id="calc-moy3-arret">—</div>
+          </div>
+          <div style="flex:1;min-width:160px">
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--gold);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.08em">Salaire de référence retenu</div>
+            <div style="font-family:var(--mono);font-size:1rem;color:var(--gold)" id="calc-sref-arret">—</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- MODE AUTO : saisie mois par mois -->
     <div id="mode-auto">
       <div class="note-excl">
-        <strong>⚠ Éléments à INCLURE dans col.1 :</strong> salaire fixe, variable, commissions, toutes primes versées ce mois, avantages en nature (AEN)<br>
-        <strong>Éléments à EXCLURE de col.1 :</strong>
+        <strong>⚠ Éléments à INCLURE (col.1 et col.2)- qques ex. :</strong> salaire fixe, variable, commissions, toutes primes versées ce mois, avantages en nature (AEN)<br>
+		<div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(240,180,41,.2)">
+        <strong>⚠ En cas d'absence pour raison de santé pendant la période de référence : reconstituer le salaire brut comme si le salarié avait été présent (Cass. soc. 23.05.2017 n°15-22223).</strong><br>
+        </div>
+		<div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(240,180,41,.2)">
+		<strong>Éléments à EXCLURE (col.1 et col.2)- qques ex. :</strong>
         <ul>
           <li>Remboursements de frais professionnels (repas, transport, logement…)</li>
           <li>Indemnité compensatrice de congés payés (ICCP)</li>
           <li>Indemnité compensatrice de préavis (si dispense employeur)</li>
           <li>Primes ou gratifications discrétionnaires versées à une catégorie ou à l'occasion d'un événement unique</li>
           <li>Participation aux résultats (intéressement, participation)</li>
+	    </div>
         </ul>
         <div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(240,180,41,.2)">
           <strong style="color:var(--gold)">★ Colonne "Salaire corrigé" (3 derniers mois uniquement) :</strong><br>
@@ -325,7 +386,7 @@ footer a{color:var(--a);text-decoration:none}
       Votre convention collective peut prévoir une formule plus favorable — vérifiez systématiquement avant d'établir le solde de tout compte.<br><br>
       <strong>Sources :</strong>
       <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F987" target="_blank">service-public.fr/F987</a> ·
-      Art. R1234-1 à R1234-5, Art. L1226-14 C.trav. ·
+      Art. R1234-1 à R1234-5, Art. L1226-14 C.trav.
       Vérifié : <span id="o-dateverif"></span> ·
       Cet outil ne constitue pas un conseil juridique.
     </div>
@@ -335,8 +396,12 @@ footer a{color:var(--a);text-decoration:none}
 </div><!-- /layout -->
 
 <footer>
-  Outils Paie France · Propulsé par AFPRH / OPTIMYZ HR<br>
-  <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F987" target="_blank">service-public.fr/F987</a> · Art. R1234-1 à R1234-5 du Code du travail
+  Outils Paie · Propulsé par OPTIMYZ HR LTD<br>
+  <a href="https://www.linkedin.com/in/danielclementine" target="_blank">LinkedIn</a>
+  &nbsp;·&nbsp;
+  <a href="mailto:optimyzhr@gmail.com">optimyzhr@gmail.com</a>
+  &nbsp;·&nbsp;
+  <a href="https://wa.me/2305974795" target="_blank">WhatsApp +230 5 974 4795</a>
 </footer>
 
 <script>
@@ -362,57 +427,69 @@ function switchMode(m) {
   modeActuel = m;
   document.getElementById('mode-auto').style.display   = m === 'auto'   ? '' : 'none';
   document.getElementById('mode-manuel').style.display = m === 'manuel' ? '' : 'none';
+  document.getElementById('mode-arret').style.display  = m === 'arret'  ? '' : 'none';
   document.getElementById('tab-auto').classList.toggle('active',   m === 'auto');
   document.getElementById('tab-manuel').classList.toggle('active', m === 'manuel');
+  document.getElementById('tab-arret').classList.toggle('active',  m === 'arret');
 }
 
 /* ── GÉNÉRATION GRILLE SALAIRES ── */
 // Appelée dès que la date de notification change
-function genererGrille() {
-  var notifVal = document.getElementById('i-notif').value;
-  if (!notifVal) return;
-  var notif = new Date(notifVal);
-  var tbody = document.getElementById('sal-tbody');
+function genererGrille(dateRef, tbodyId, moy12Id, moy3Id, srefId, prefix) {
+  if (!dateRef) return;
+  var ref = new Date(dateRef);
+  var tbody = document.getElementById(tbodyId);
   tbody.innerHTML = '';
-
   var MOIS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 
-  for (var i = 0; i < 12; i++) {
-    var d = new Date(notif.getFullYear(), notif.getMonth() - 1 - i, 1);
+  // Calcul du nombre de mois à afficher (max 12, min = mois complets depuis date ancienneté)
+  var ancVal = document.getElementById('i-entree').value;
+  var nbMois = 12;
+  if (ancVal) {
+    var anc = new Date(ancVal);
+    var diffMois = (ref.getFullYear() - anc.getFullYear()) * 12 + (ref.getMonth() - anc.getMonth());
+    if (diffMois < 12) nbMois = Math.max(diffMois, 1);
+  }
+
+  for (var i = 0; i < nbMois; i++) {
+    var d = new Date(ref.getFullYear(), ref.getMonth() - 1 - i, 1);
     var label = MOIS_FR[d.getMonth()] + ' ' + d.getFullYear();
-    var is3 = i < 3; // les 3 derniers mois avant notification
+    var is3 = i < 3;
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td><span class="mois-label' + (is3 ? ' ref3' : '') + '">' + label + (is3 ? ' ★' : '') + '</span></td>' +
-      '<td><input class="sal-input" type="number" id="sal-' + i + '" placeholder="0.00" step="0.01" min="0" oninput="updateMoyennes()"></td>' +
-      '<td><input class="sal-input prime-cell" type="number" id="prime-' + i + '" placeholder="' + (is3 ? 'si prime >3 mois: corrigé' : '—') + '" step="0.01" min="0" ' + (is3 ? '' : 'disabled style="opacity:.3"') + ' oninput="updateMoyennes()" title="Laisser vide si aucune prime à périodicité >3 mois. Sinon saisir le salaire corrigé : Sal.réel - Prime.réelle + (Prime.réelle × 3 ÷ périodicité en mois)"></td>';
+      '<td><input class="sal-input" type="number" id="' + prefix + 'sal-' + i + '" placeholder="0.00" step="0.01" min="0" oninput="updateMoyennes(\'' + prefix + '\',' + nbMois + ',\'' + moy12Id + '\',\'' + moy3Id + '\',\'' + srefId + '\')"></td>' +
+      '<td><input class="sal-input prime-cell" type="number" id="' + prefix + 'prime-' + i + '" placeholder="' + (is3 ? 'si prime >3 mois: corrigé' : '—') + '" step="0.01" min="0" ' + (is3 ? '' : 'disabled style="opacity:.3"') + ' oninput="updateMoyennes(\'' + prefix + '\',' + nbMois + ',\'' + moy12Id + '\',\'' + moy3Id + '\',\'' + srefId + '\')" title="Laisser vide si aucune prime à périodicité >3 mois. Sinon : Sal.réel - Prime.réelle + (Prime.réelle × 3 ÷ périodicité en mois)"></td>';
     tbody.appendChild(tr);
   }
-  updateMoyennes();
+  updateMoyennes(prefix, nbMois, moy12Id, moy3Id, srefId);
 }
 
 /* ── CALCUL MOYENNES EN TEMPS RÉEL ── */
-function updateMoyennes() {
+function updateMoyennes(prefix, nbMois, moy12Id, moy3Id, srefId) {
+  prefix  = prefix  || '';
+  nbMois  = nbMois  || 12;
+  moy12Id = moy12Id || 'calc-moy12';
+  moy3Id  = moy3Id  || 'calc-moy3';
+  srefId  = srefId  || 'calc-sref';
   var vals12 = [], vals3 = [];
-  for (var i = 0; i < 12; i++) {
-    var v = parseFloat(document.getElementById('sal-' + i)?.value || 0) || 0;
+  for (var i = 0; i < nbMois; i++) {
+    var el = document.getElementById(prefix + 'sal-' + i);
+    var v = el ? (parseFloat(el.value) || 0) : 0;
     vals12.push(v);
     if (i < 3) {
-      // Col2 (corrigé) remplace col1 si renseignée, sinon col1 utilisée
-      var corrige = document.getElementById('prime-' + i)?.value;
-      var v3 = (corrige !== '' && corrige !== null && !isNaN(parseFloat(corrige)))
-               ? parseFloat(corrige)
-               : v;
+      var elp = document.getElementById(prefix + 'prime-' + i);
+      var corrige = elp ? elp.value : '';
+      var v3 = (corrige !== '' && !isNaN(parseFloat(corrige))) ? parseFloat(corrige) : v;
       vals3.push(v3);
     }
   }
-  var moy12 = vals12.reduce((a,b)=>a+b,0) / 12;
-  var moy3  = vals3.reduce((a,b)=>a+b,0) / 3;
+  var moy12 = vals12.reduce((a,b)=>a+b,0) / nbMois;
+  var moy3  = vals3.length === 3 ? vals3.reduce((a,b)=>a+b,0) / 3 : 0;
   var sref  = Math.max(moy12, moy3);
-
-  document.getElementById('calc-moy12').textContent = moy12 > 0 ? fmt(moy12) : '—';
-  document.getElementById('calc-moy3').textContent  = moy3  > 0 ? fmt(moy3)  : '—';
-  document.getElementById('calc-sref').textContent  = sref  > 0 ? fmt(sref) + (moy3 >= moy12 ? ' (3m)' : ' (12m)') : '—';
+  var el12 = document.getElementById(moy12Id); if(el12) el12.textContent = moy12 > 0 ? fmt(moy12) : '—';
+  var el3  = document.getElementById(moy3Id);  if(el3)  el3.textContent  = moy3  > 0 ? fmt(moy3)  : '—';
+  var els  = document.getElementById(srefId);  if(els)  els.textContent  = sref  > 0 ? fmt(sref) + (moy3 >= moy12 ? ' (3m)' : ' (12m)') : '—';
 }
 
 /* ── UTILITAIRES ── */
@@ -473,22 +550,35 @@ function calculer() {
   var sal12, sal3;
   if (modeActuel === 'auto') {
     // Vérifier que les 12 mois sont remplis
+    // Déterminer le préfixe et nbMois selon le mode
+    var pfx = modeActuel === 'arret' ? 'a' : '';
+    var ancVal2 = document.getElementById('i-entree').value;
+    var dateRefVal = modeActuel === 'arret'
+      ? document.getElementById('i-arret').value
+      : document.getElementById('i-notif').value;
+    var nbMoisCalc = 12;
+    if (ancVal2 && dateRefVal) {
+      var ancD = new Date(ancVal2), refD = new Date(dateRefVal);
+      var diff = (refD.getFullYear()-ancD.getFullYear())*12+(refD.getMonth()-ancD.getMonth());
+      if (diff < 12) nbMoisCalc = Math.max(diff, 1);
+    }
+    if (modeActuel === 'arret' && !document.getElementById('i-arret').value)
+      return showError("Veuillez saisir la date de début d'arrêt de travail.");
     var total12 = 0, total3 = 0, manquants = 0;
-    for (var i = 0; i < 12; i++) {
-      var v = parseFloat(document.getElementById('sal-' + i)?.value || '');
+    for (var i = 0; i < nbMoisCalc; i++) {
+      var el = document.getElementById(pfx + 'sal-' + i);
+      var v = el ? parseFloat(el.value || '') : NaN;
       if (isNaN(v) || v < 0) { manquants++; continue; }
       total12 += v;
       if (i < 3) {
-        // Col2 (corrigé) remplace col1 si renseignée, sinon col1 utilisée
-        var corrige = document.getElementById('prime-' + i)?.value;
-        var v3 = (corrige !== '' && corrige !== null && !isNaN(parseFloat(corrige)))
-                 ? parseFloat(corrige)
-                 : v;
+        var elp = document.getElementById(pfx + 'prime-' + i);
+        var corrige = elp ? elp.value : '';
+        var v3 = (corrige !== '' && !isNaN(parseFloat(corrige))) ? parseFloat(corrige) : v;
         total3 += v3;
       }
     }
     if (manquants > 0) return showError("Veuillez remplir les " + manquants + " mois manquant(s) dans le tableau des salaires.");
-    sal12 = total12 / 12;
+    sal12 = total12 / nbMoisCalc;
     sal3  = total3 / 3;
   } else {
     sal12 = parseFloat(document.getElementById('i-s12').value);
@@ -573,7 +663,19 @@ function calculer() {
 }
 
 /* ── INIT ── */
-document.getElementById('i-notif').addEventListener('change', genererGrille);
+document.getElementById('i-notif').addEventListener('change', function() {
+  genererGrille(this.value, 'sal-tbody', 'calc-moy12', 'calc-moy3', 'calc-sref', '');
+});
+document.getElementById('i-entree').addEventListener('change', function() {
+  var notifVal = document.getElementById('i-notif').value;
+  if (notifVal) genererGrille(notifVal, 'sal-tbody', 'calc-moy12', 'calc-moy3', 'calc-sref', '');
+  var arretVal = document.getElementById('i-arret').value;
+  if (arretVal) genererGrille(arretVal, 'sal-tbody-arret', 'calc-moy12-arret', 'calc-moy3-arret', 'calc-sref-arret', 'a');
+});
+document.getElementById('i-arret').addEventListener('change', function() {
+  document.getElementById('mode-arret-grille').style.display = this.value ? '' : 'none';
+  genererGrille(this.value, 'sal-tbody-arret', 'calc-moy12-arret', 'calc-moy3-arret', 'calc-sref-arret', 'a');
+});
 document.getElementById('o-dateverif') && (document.getElementById('o-dateverif').textContent = LEGAL.dateVerif);
 
 // Pré-remplir depuis URL si paramètres présents (compatibilité wizard LLM)
@@ -593,7 +695,7 @@ document.getElementById('o-dateverif') && (document.getElementById('o-dateverif'
     return null;
   }
   var de=gp('de','date_entree'); if(de){var iso=toISO(de);if(iso)document.getElementById('i-entree').value=iso;}
-  var dn=gp('dn','date_notif');  if(dn){var iso=toISO(dn);if(iso){document.getElementById('i-notif').value=iso;genererGrille();}}
+  var dn=gp('dn','date_notif');  if(dn){var iso=toISO(dn);if(iso){document.getElementById('i-notif').value=iso;genererGrille(iso,'sal-tbody','calc-moy12','calc-moy3','calc-sref','');}}
   var df=gp('df','date_fin');    if(df){var iso=toISO(df);if(iso)document.getElementById('i-fin').value=iso;}
   var s12=gp('s12','sal12');     if(s12){switchMode('manuel');document.getElementById('i-s12').value=s12;}
   var s3=gp('s3','sal3');        if(s3){document.getElementById('i-s3').value=s3;}
