@@ -3,7 +3,7 @@
   ║  OUTILS PAIE FRANCE · /licenciement                 ║
   ║  Version : 4.0                                      ║
   ║  Dernière mise à jour : mai 2026                    ║
-  ║  Auteur : OPTIMYZ HR                        ║
+  ║  Auteur : OPTIMYZ HR                                ║
   ║  Source légale : Art. R1234-1 à R1234-5 C.trav.     ║
   ║                  Art. L1226-14 C.trav.              ║
   ║  Vérification légale : janvier 2026                 ║
@@ -168,6 +168,11 @@ footer a{color:var(--a);text-decoration:none}
         <input class="form-input" type="date" id="i-entree" placeholder="JJ/MM/AAAA">
       </div>
       <div class="form-group">
+        <label class="form-label"><strong>Mois à déduire de l'ancienneté</strong><br>
+        <span style="font-size:.7rem">Périodes réduisant l'ancienneté pour le calcul de l'IL · <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F371" target="_blank" style="color:var(--a)">Voir les cas concernés</a></span></label>
+        <input class="form-input" type="number" id="i-mois-ded" placeholder="0" min="0" step="1" value="0" style="max-width:120px">
+      </div>
+      <div class="form-group">
         <label class="form-label"><strong>Date de notification</strong> du licenciement</label>
         <input class="form-input" type="date" id="i-notif" placeholder="JJ/MM/AAAA">
       </div>
@@ -326,7 +331,8 @@ footer a{color:var(--a);text-decoration:none}
     <!-- DONNÉES RÉCAP -->
     <div class="card" style="animation-delay:.05s" id="cardDonnees">
       <div class="card-label">Données salarié</div>
-      <div class="row"><span class="row-label">Date d'entrée</span><span class="row-value" id="o-entree">—</span></div>
+      <div class="row"><span class="row-label">Date d'ancienneté</span><span class="row-value" id="o-entree">—</span></div>
+	  <div class="row" id="row-ded" style="display:none"><span class="row-label">Mois déduits de l'ancienneté</span><span class="row-value red" id="o-mois-ded">—</span></div>
       <div class="row"><span class="row-label">Date de notification</span><span class="row-value" id="o-notif">—</span></div>
       <div class="row"><span class="row-label">Fin de contrat (fin préavis)</span><span class="row-value" id="o-fin">—</span></div>
       <div class="row"><span class="row-label">Ancienneté (sur fin préavis)</span><span class="row-value gold" id="o-anc">—</span></div>
@@ -541,6 +547,10 @@ function calculer() {
   var mt = (dateFin.getFullYear() - dateEntree.getFullYear()) * 12
          + (dateFin.getMonth() - dateEntree.getMonth());
   if (dateFin.getDate() < dateEntree.getDate()) mt--;
+  var moisDed = parseInt(document.getElementById('i-mois-ded').value) || 0;
+  if (moisDed < 0) moisDed = 0;
+  mt = mt - moisDed;
+  if (mt < 0) mt = 0;
   var ay = Math.floor(mt / 12);
   var am = mt % 12;
 
@@ -607,6 +617,13 @@ function calculer() {
   /* ── AFFICHAGE ── */
   document.getElementById('o-dateverif').textContent = LEGAL.dateVerif;
   document.getElementById('o-entree').textContent = fmtDate(dateEntree);
+  var rowDed = document.getElementById('row-ded');
+  if (moisDed > 0) {
+    rowDed.style.display = '';
+    document.getElementById('o-mois-ded').textContent = '− ' + moisDed + ' mois';
+  } else {
+    rowDed.style.display = 'none';
+  }
   document.getElementById('o-notif').textContent  = fmtDate(dateNotif);
   document.getElementById('o-fin').textContent    = fmtDate(dateFin);
   document.getElementById('o-anc').textContent    = fmtDuree(ay, am);
@@ -701,6 +718,7 @@ document.getElementById('o-dateverif') && (document.getElementById('o-dateverif'
   var s3=gp('s3','sal3');        if(s3){document.getElementById('i-s3').value=s3;}
   var inapt=gp('inapt');         if(inapt==='1')document.getElementById('i-inapt').checked=true;
   var arret=gp('arret'); if(arret==='1'){switchMode('arret');document.getElementById('mode-arret-grille').style.display='';}
+  var ded=gp('ded'); if(ded && parseInt(ded)>0) document.getElementById('i-mois-ded').value=parseInt(ded);
 })();
 </script>
 </body>
