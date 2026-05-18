@@ -700,6 +700,7 @@ document.getElementById('o-dateverif') && (document.getElementById('o-dateverif'
   var s12=gp('s12','sal12');     if(s12){switchMode('manuel');document.getElementById('i-s12').value=s12;}
   var s3=gp('s3','sal3');        if(s3){document.getElementById('i-s3').value=s3;}
   var inapt=gp('inapt');         if(inapt==='1')document.getElementById('i-inapt').checked=true;
+  var arret=gp('arret'); if(arret==='1'){switchMode('arret');document.getElementById('mode-arret-grille').style.display='';}
 })();
 </script>
 </body>
