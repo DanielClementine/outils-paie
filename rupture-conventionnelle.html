@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rétro-planning — Rupture Conventionnelle CDI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2435;
+    --border: #2a3050;
+    --indigo: #6366f1;
+    --indigo-light: #818cf8;
+    --indigo-dim: #312e81;
+    --green: #10b981;
+    --green-dim: #064e3b;
+    --yellow: #f59e0b;
+    --yellow-dim: #78350f;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  
+  .container { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
+  
+  /* HEADER */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+  .header-left h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: #fff; line-height: 1.2; }
+  .header-left p { color: var(--text-muted); margin-top: 6px; font-size: 0.9rem; }
+  .badge-legal { display: inline-block; background: var(--indigo-dim); color: var(--indigo-light); font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; margin-top: 8px; }
+  .btn-print { background: var(--indigo); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn-print:hover { background: var(--indigo-light); }
+
+  /* PARAMS */
+  .params-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 32px; }
+  .params-card h2 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px; }
+  .params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: end; }
+  .field label { display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; }
+  .field input, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .field input:focus, .field select:focus { border-color: var(--indigo); }
+  .field input[type="text"] { color: var(--text-muted); font-size: 0.85rem; }
+  .btn-calc { background: var(--indigo); color: #fff; border: none; width: 100%; padding: 11px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn-calc:hover { background: var(--indigo-light); }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .steps::before { content: ''; position: absolute; left: 22px; top: 24px; bottom: 24px; width: 2px; background: linear-gradient(to bottom, var(--indigo-dim), var(--border)); z-index: 0; }
+  
+  .step { display: flex; gap: 16px; position: relative; z-index: 1; }
+  .step + .step { margin-top: 4px; }
+  
+  .step-dot { flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; border: 2px solid var(--border); background: var(--surface); }
+  .step-dot.active { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+  .step-dot.success { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  
+  .step-body { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 4px; transition: border-color 0.2s; }
+  .step-body:hover { border-color: var(--indigo); }
+  .step-body.highlight { border-color: var(--indigo); background: #181c35; }
+  .step-body.success { border-color: var(--green); background: #0d1f18; }
+  
+  .step-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .step-title { font-weight: 600; font-size: 0.95rem; color: #fff; }
+  .step-date { font-family: 'DM Serif Display', serif; font-size: 1.15rem; color: var(--indigo-light); white-space: nowrap; }
+  .step-date.success { color: var(--green); }
+  .step-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+  
+  .warn-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 6px; }
+  .ok-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.2); font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 6px; }
+
+  /* RECAP */
+  .recap { background: var(--surface); border: 1px solid var(--indigo); border-radius: 16px; padding: 24px; margin-top: 32px; }
+  .recap h2 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--indigo-light); margin-bottom: 16px; }
+  .recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .recap-item { background: var(--surface2); border-radius: 8px; padding: 12px 14px; }
+  .recap-item label { font-size: 0.78rem; color: var(--text-dim); display: block; margin-bottom: 3px; }
+  .recap-item .val { font-weight: 600; color: var(--text); font-size: 0.95rem; }
+  .recap-item.main { grid-column: 1 / -1; background: var(--indigo-dim); border: 1px solid var(--indigo); }
+  .recap-item.main .val { color: var(--indigo-light); font-size: 1.1rem; font-family: 'DM Serif Display', serif; }
+
+  /* LEGAL */
+  .legal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 24px; }
+  .legal h3 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .legal ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .legal li { font-size: 0.8rem; color: var(--text-dim); padding-left: 14px; position: relative; line-height: 1.5; }
+  .legal li::before { content: '·'; position: absolute; left: 0; color: var(--indigo-light); font-weight: bold; }
+
+  .footer { text-align: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+  /* PRINT */
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+	.params-card { background: #f1f5f9 !important; border-color: #6366f1 !important; }
+	.params-card h2 { color: #4338ca !important; }
+	.header { display: block !important; }
+	.header-left h1 { color: #1e1b4b !important; font-size: 20pt !important; }
+	.header-left p { color: #475569 !important; }
+	.recap-item .val { color: #1e1b4b !important; font-weight: 700 !important; }
+	.recap-item label { color: #475569 !important; }
+	.badge-legal { background: #e0e7ff !important; color: #4338ca !important; }
+	.btn-print { display: none !important; }
+	.field label { color: #475569 !important; }
+	.field input, .field select { background: #f8fafc !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
+	.btn-calc { display: none !important; }
+    .no-print { display: none !important; }
+    .btn-print { display: none !important; }
+    .container { padding: 20px; }
+    .header-left h1 { color: #1e1b4b; }
+    .step-body { background: #fff !important; border: 1px solid #ccc !important; break-inside: avoid; }
+    .step-title { color: #1e1b4b !important; }
+    .step-date { color: #4338ca !important; }
+    .step-desc { color: #374151 !important; }
+    .steps::before { background: #c7d2fe !important; }
+    .step-dot { background: #e0e7ff !important; border-color: #6366f1 !important; color: #4338ca !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .step-dot.active { background: #4338ca !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .step-dot.success { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .recap { border-color: #6366f1 !important; background: #fff !important; }
+    .recap-item { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .recap-item.main { background: #e0e7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .recap-item.main .val { color: #3730a3 !important; }
+    .warn-tag { background: #fef3c7 !important; color: #92400e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .ok-tag { background: #d1fae5 !important; color: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .legal { background: #f8fafc !important; }
+    .footer { color: #6b7280 !important; }
+    [contenteditable="true"]:focus { outline: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1 contenteditable="true">Rétro-planning<br>Rupture Conventionnelle CDI</h1>
+      <p contenteditable="true">Procédure individuelle — Hors salarié protégé</p>
+      <span class="badge-legal">Selon le Code du Travail en vigueur</span>
+    </div>
+    <button class="btn-print" onclick="window.print()">Imprimer / PDF</button>
+  </div>
+
+  <!-- PARAMS -->
+  <div class="params-card">
+    <h2>Paramètres du calcul</h2>
+    <div class="params-grid">
+      <div class="field">
+        <label>Mode de calcul</label>
+        <select id="mode" onchange="onModeChange()">
+          <option value="retro">Depuis la date de sortie souhaitée</option>
+          <option value="forward">Depuis la date de signature</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="date-label">Date de sortie des effectifs souhaitée</label>
+        <input type="date" id="dateInput" onchange="calculer()">
+      </div>
+      <div class="field">
+        <label>Référence dossier (optionnel)</label>
+        <input type="text" id="refDossier" placeholder="Ex : RC-2026-001 — anonymisé">
+      </div>
+      <div class="field">
+        <button class="btn-calc" onclick="calculer()">Calculer le rétro-planning</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉSULTAT -->
+  <div id="resultat"></div>
+
+  <!-- LEGAL -->
+  <div class="legal" id="legal-box" style="display:none">
+    <h3>Rappels légaux essentiels</h3>
+    <ul>
+      <li contenteditable="true">Le délai de rétractation est de <strong>15 jours calendaires</strong> à compter du lendemain de la signature. La lettre de rétractation doit être envoyée dans ce délai, peu importe sa date de réception.</li>
+      <li contenteditable="true">Le délai d'instruction DREETS est de <strong>15 jours ouvrables</strong> à compter du lendemain de la réception. Les dimanches et jours fériés légaux chômés ne sont pas comptés. Tout jour férié inclus prolonge le délai d'un jour ouvrable.</li>
+      <li contenteditable="true">En l'absence de réponse de la DREETS dans le délai d'instruction, l'homologation est réputée acquise à minuit le dernier jour.</li>
+      <li contenteditable="true">La rupture du contrat peut intervenir <strong>au plus tôt le lendemain</strong> de la fin du délai d'instruction. Cette date doit figurer dans la convention.</li>
+      <li contenteditable="true">L'assistance du salarié par une personne extérieure à l'entreprise n'est possible que dans les entreprises de moins de 50 salariés.</li>
+      <li contenteditable="true">Toute contestation doit être portée exclusivement devant le Conseil de prud'hommes dans un délai de <strong>12 mois</strong> suivant la rupture.</li>
+      <li contenteditable="true">La demande d'homologation peut être effectuée en ligne sur <strong>www.teleRC.travail.gouv.fr</strong></li>
+    </ul>
+  </div>
+
+  <div class="footer" id="footer-box" style="display:none">
+    <span contenteditable="true">Document généré automatiquement — Données anonymisées — Selon le Code du Travail en vigueur — Hors salariés protégés</span>
+  </div>
+
+</div>
+
+<script>
+// ─── JOURS FÉRIÉS FRANCE MÉTROPOLITAINE ───
+async function getFeries(year) {
+    if (feriesCache[year]) return feriesCache[year];
+    try {
+        const r = await fetch(`https://calendrier.api.gouv.fr/jours-feries/metropole/${year}.json`);
+        const data = await r.json();
+        feriesCache[year] = Object.keys(data);
+        return feriesCache[year];
+    } catch {
+        return [];
+    }
+}
+const feriesCache = {};
+
+function toISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const j = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+j;
+}
+
+function isFerie(d) {
+  const list = feriesCache[d.getFullYear()] || [];
+  return list.includes(toISO(d));
+}
+
+function isWeekend(d) { return d.getDay()===0 || d.getDay()===6; }
+function isNonOuvrable(d) { return d.getDay()===0 || isFerie(d); } // dimanche + férié légal chômé
+
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate()+n);
+  return r;
+}
+
+// Ajoute n jours CALENDAIRES et proroge si weekend/férié
+function addCalendaires(d, n) {
+  let r = addDays(d, n);
+  while (isWeekend(r) || isFerie(r)) r = addDays(r, 1);
+  return r;
+}
+
+// Ajoute n jours OUVRABLES (hors dimanche et jours fériés légaux chômés)
+// = on avance d'un jour, si c'est un dimanche ou férié on ne compte pas
+function addOuvrables(d, n) {
+  let count = 0;
+  let r = new Date(d);
+  while (count < n) {
+    r = addDays(r, 1);
+    if (!isNonOuvrable(r)) count++;
+  }
+  // Si la fin tombe un samedi, dimanche ou férié → proroger
+  while (isWeekend(r) || isFerie(r)) r = addDays(r, 1);
+  return r;
+}
+
+// Soustrait n jours OUVRABLES (rétro)
+function subOuvrables(d, n) {
+  let count = 0;
+  let r = new Date(d);
+  while (count < n) {
+    r = addDays(r, -1);
+    if (!isNonOuvrable(r)) count++;
+  }
+  return r;
+}
+
+function jourSemaine(d) {
+  return ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'][d.getDay()];
+}
+
+function formatFR(d) {
+  const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return jours[d.getDay()]+' '+d.getDate()+' '+mois[d.getMonth()]+' '+d.getFullYear();
+}
+
+function warnTag(d, original) {
+  const prorog = original && (isWeekend(original) || isFerie(original));
+  if (prorog) return '<div class="warn-tag">⚠ '+jourSemaine(original)+' — prorogé au '+jourSemaine(d)+'</div>';
+  return '<div class="ok-tag">✓ '+jourSemaine(d)+'</div>';
+}
+
+function computeForward(dateSign) {
+  // Délai rétractation : lendemain de signature + 15 jours calendaires
+  const debutRetrac = addDays(dateSign, 1);
+  let finRetracBrute = addDays(dateSign, 15); // lendemain = +1, puis 15j = +15 depuis signature = +15 depuis départ
+  // Explication : délai part le lendemain de la signature, donc fin = signature + 15j
+  let finRetrac = new Date(finRetracBrute);
+  while (isWeekend(finRetrac) || isFerie(finRetrac)) finRetrac = addDays(finRetrac, 1);
+
+  // Envoi homologation : lendemain fin rétractation
+  const envoiHomol = addDays(finRetrac, 1);
+
+  // Réception DREETS : même jour que l'envoi (télétransmission, conforme TéléRC officiel)
+  const receptionDir = envoiHomol;
+
+  // Délai instruction : 15 jours OUVRABLES à compter du lendemain de la réception
+  const debutInstruction = addDays(receptionDir, 1);
+  let finInstructionBrute = addOuvrables(receptionDir, 15); // +15j ouvrables depuis réception
+  let finInstruction = new Date(finInstructionBrute);
+  while (isWeekend(finInstruction) || isFerie(finInstruction)) finInstruction = addDays(finInstruction, 1);
+
+  // Date rupture : lendemain fin instruction
+  const dateRupture = addDays(finInstruction, 1);
+
+  return { dateSign, debutRetrac, finRetracBrute, finRetrac, envoiHomol, receptionDir, debutInstruction, finInstructionBrute, finInstruction, dateRupture };
+}
+
+function unprorogue(d) {
+  let raw = new Date(d);
+  let prev = addDays(raw, -1);
+  while (isWeekend(prev) || isFerie(prev)) { raw = prev; prev = addDays(raw, -1); }
+  return raw;
+}
+
+function computeRetro(dateSortie) {
+  const finInstruction = addDays(dateSortie, -1);
+  const rawFinInstruction = unprorogue(finInstruction);
+  const receptionDir = subOuvrables(rawFinInstruction, 15);
+  const envoiHomol = new Date(receptionDir);
+  const finRetrac = addDays(envoiHomol, -1);
+  const rawFinRetrac = unprorogue(finRetrac);
+  const dateSign = addDays(rawFinRetrac, -15);
+  return computeForward(dateSign);
+}
+
+function onModeChange() {
+  const mode = document.getElementById('mode').value;
+  const label = document.getElementById('date-label');
+  if (mode === 'retro') label.textContent = 'Date de sortie des effectifs souhaitée';
+  else label.textContent = 'Date de signature de la convention';
+  calculer();
+}
+
+async function calculer() {
+  const val = document.getElementById('dateInput').value;
+  if (!val) return;
+  const mode = document.getElementById('mode').value;
+  const inputDate = new Date(val+'T12:00:00');
+  
+  // Charger les fériés pour toutes les années concernées par le calcul
+  const y = inputDate.getFullYear();
+  await Promise.all([y-1, y, y+1, y+2].map(yr => getFeries(yr)));
+  
+  const s = mode === 'retro' ? computeRetro(inputDate) : computeForward(inputDate);
+  render(s, mode);
+}
+
+function render(s, mode) {
+  const steps = [
+    {
+      num: 1, titre: 'Entretien(s) préparatoire(s)', type: 'normal',
+      label: 'Avant le', date: s.dateSign, dateBrute: null,
+      desc: 'Au moins 1 entretien obligatoire. Le salarié peut être assisté par une personne de son choix (personnel de l\'entreprise). L\'employeur peut être assisté uniquement si le salarié l\'est également.'
+    },
+    {
+      num: 2, titre: 'Signature de la convention de rupture', type: 'highlight',
+      label: 'Date de signature', date: s.dateSign, dateBrute: null,
+      desc: 'Les deux parties signent la convention. Cette date déclenche le délai de rétractation de 15 jours calendaires. La date de rupture envisagée doit figurer dans la convention.'
+    },
+    {
+      num: 3, titre: 'Début du délai de rétractation', type: 'normal',
+      label: 'Le lendemain de la signature', date: s.debutRetrac, dateBrute: null,
+      desc: 'Le délai de 15 jours calendaires commence le lendemain de la signature. Chaque partie peut se rétracter par écrit (LRAR, remise en main propre contre décharge, acte d\'huissier).'
+    },
+    {
+      num: 4, titre: 'Fin du délai de rétractation', type: 'highlight',
+      label: 'À minuit le', date: s.finRetrac, dateBrute: s.finRetracBrute,
+      desc: 'Expiration du délai de rétractation de 15 jours calendaires. Si cette date tombe un samedi, dimanche ou jour férié chômé, le délai est prorogé jusqu\'au 1er jour ouvrable suivant.'
+    },
+    {
+      num: 5, titre: 'Envoi de la demande d\'homologation à la DREETS', type: 'normal',
+      label: 'Au plus tôt le', date: s.envoiHomol, dateBrute: null,
+      desc: 'Dès le lendemain de la fin du délai de rétractation, la partie la plus diligente adresse la demande d\'homologation à la DREETS (formulaire réglementaire). Envoi possible en ligne sur www.teleRC.travail.gouv.fr'
+    },
+    {
+      num: 6, titre: 'Réception par la DREETS (télétransmission)', type: 'normal',
+      label: 'Le', date: s.receptionDir, dateBrute: null,
+      desc: 'Par télétransmission sur www.teleRC.travail.gouv.fr, la réception est effective le jour même de l\'envoi. Le délai d\'instruction de 15 jours ouvrables court à compter du lendemain de cette réception.'
+    },
+    {
+      num: 7, titre: 'Début du délai d\'instruction DREETS', type: 'normal',
+      label: 'Le', date: s.debutInstruction, dateBrute: null,
+      desc: 'Le délai d\'instruction de 15 jours ouvrables commence le lendemain de la réception de la demande. Les dimanches et jours fériés légaux chômés ne sont pas comptés. Tout jour férié inclus dans le délai prolonge celui-ci d\'un jour ouvrable.'
+    },
+    {
+      num: 8, titre: 'Fin du délai d\'instruction — Homologation implicite', type: 'highlight',
+      label: 'À minuit le', date: s.finInstruction, dateBrute: s.finInstructionBrute,
+      desc: 'Expiration du délai d\'instruction de 15 jours ouvrables. En l\'absence de décision expresse de la DREETS, l\'homologation est réputée acquise à minuit. Si un jour férié est inclus dans le délai, il ne compte pas et prolonge le délai d\'un jour ouvrable.'
+    },
+    {
+      num: 9, titre: 'Date de rupture du contrat de travail — Sortie des effectifs', type: 'success',
+      label: 'Au plus tôt le', date: s.dateRupture, dateBrute: null,
+      desc: 'La rupture du contrat peut intervenir au plus tôt le lendemain de la fin du délai d\'instruction (ou le lendemain de la notification d\'une décision expresse d\'homologation si elle intervient avant). Cette date doit impérativement figurer dans la convention et être postérieure à la fin du délai d\'instruction.'
+    }
+  ];
+
+  let html = '<div class="steps">';
+  steps.forEach(step => {
+    const dotClass = step.type === 'success' ? 'success' : (step.type === 'highlight' ? 'active' : '');
+    const bodyClass = step.type === 'success' ? 'success' : (step.type === 'highlight' ? 'highlight' : '');
+    const dateClass = step.type === 'success' ? 'step-date success' : 'step-date';
+    const warn = step.dateBrute ? warnTag(step.date, step.dateBrute) : '<div class="ok-tag">✓ '+jourSemaine(step.date)+'</div>';
+
+    html += `
+    <div class="step">
+      <div class="step-dot ${dotClass}">${step.num}</div>
+      <div class="step-body ${bodyClass}">
+        <div class="step-header">
+          <div class="step-title" contenteditable="true">${step.titre}</div>
+          <div class="${dateClass}" contenteditable="true">${formatFR(step.date)}</div>
+        </div>
+        <div class="step-desc" contenteditable="true"><em style="color:var(--text-dim);font-style:normal">${step.label} :</em> ${step.desc}</div>
+        ${warn}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Récap
+  html += `
+  <div class="recap" style="margin-top:32px">
+    <h2>Récapitulatif des dates clés</h2>
+    <div class="recap-grid">
+      <div class="recap-item"><label>Signature de la convention</label><div class="val" contenteditable="true">${formatFR(s.dateSign)}</div></div>
+      <div class="recap-item"><label>Fin du délai de rétractation</label><div class="val" contenteditable="true">${formatFR(s.finRetrac)} à minuit</div></div>
+      <div class="recap-item"><label>Envoi demande homologation (au plus tôt)</label><div class="val" contenteditable="true">${formatFR(s.envoiHomol)}</div></div>
+      <div class="recap-item"><label>Fin délai instruction DREETS</label><div class="val" contenteditable="true">${formatFR(s.finInstruction)} à minuit</div></div>
+      <div class="recap-item main"><label>Date de rupture du contrat — Sortie des effectifs</label><div class="val" contenteditable="true">${formatFR(s.dateRupture)}</div></div>
+    </div>
+  </div>`;
+
+  document.getElementById('resultat').innerHTML = html;
+  document.getElementById('legal-box').style.display = 'block';
+  document.getElementById('footer-box').style.display = 'block';
+}
+
+// ── LECTURE PARAMÈTRES URL (compatibilité wizard LLM) ──
+// Paramètres acceptés :
+//   mode  = retro | forward   (mode de calcul)
+//   date  = JJ/MM/AAAA        (date de sortie si retro, date de signature si forward)
+//   ref   = texte libre       (référence dossier optionnelle)
+function lireParamsURL() {
+  const p = new URLSearchParams(window.location.search);
+
+  // Conversion JJ/MM/AAAA → AAAA-MM-JJ pour input[type=date]
+  function toISOFromFR(s) {
+    if (!s) return null;
+    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (m) return m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
+    if (s.match(/^\d{4}-\d{2}-\d{2}$/)) return s; // déjà ISO
+    return null;
+  }
+
+  const mode = p.get('mode');
+  if (mode === 'retro' || mode === 'forward') {
+    document.getElementById('mode').value = mode;
+    onModeChange(); // met à jour le label sans recalculer
+  }
+
+  const date = p.get('date');
+  if (date) {
+    const iso = toISOFromFR(date);
+    if (iso) document.getElementById('dateInput').value = iso;
+  }
+
+  const ref = p.get('ref');
+  if (ref) document.getElementById('refDossier').value = ref;
+}
+
+// Init : lecture URL puis calcul
+window.onload = async function() {
+  const today = new Date();
+  const years = [today.getFullYear(), today.getFullYear()+1, today.getFullYear()+2];
+  await Promise.all(years.map(y => getFeries(y)));
+
+  // Si aucun paramètre URL : date du jour par défaut
+  const p = new URLSearchParams(window.location.search);
+  if (!p.get('date')) {
+    document.getElementById('dateInput').value = toISO(today);
+  }
+
+  lireParamsURL();
+  calculer();
+};
+</script>
+</body>
+</html>
