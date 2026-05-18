@@ -1,3 +1,15 @@
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  OUTILS PAIE FRANCE · /RC                           ║
+  ║  Version : 2.0                                      ║
+  ║  Dernière mise à jour : mai 2026                    ║
+  ║  Auteur : OPTIMYZ HR                                ║
+  ║  Source légale : Art. R1234-1 à R1234-5 C.trav.     ║
+  ║                  Art. L1226-14 C.trav.              ║
+  ║  Vérification légale : Mai 2026                     ║
+  ╚══════════════════════════════════════════════════════╝
+-->
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -290,7 +302,8 @@ function computeForward(dateSign) {
   const receptionDir = envoiHomol;
 
   // Délai instruction : 15 jours OUVRABLES à compter du lendemain de la réception
-  const debutInstruction = addDays(receptionDir, 1);
+  let debutInstruction = addDays(receptionDir, 1);
+  while (isNonOuvrable(debutInstruction)) debutInstruction = addDays(debutInstruction, 1);
   let finInstructionBrute = addOuvrables(receptionDir, 15); // +15j ouvrables depuis réception
   let finInstruction = new Date(finInstructionBrute);
   while (isWeekend(finInstruction) || isFerie(finInstruction)) finInstruction = addDays(finInstruction, 1);
