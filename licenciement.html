@@ -1,7 +1,7 @@
 <!--
   ╔══════════════════════════════════════════════════════╗
   ║  OUTILS PAIE FRANCE · /licenciement                 ║
-  ║  Version : 4.0                                      ║
+  ║  Version : 6.0                                      ║
   ║  Dernière mise à jour : mai 2026                    ║
   ║  Auteur : OPTIMYZ HR                                ║
   ║  Source légale : Art. R1234-1 à R1234-5 C.trav.     ║
@@ -170,7 +170,7 @@ footer a{color:var(--a);text-decoration:none}
       <div class="form-group">
         <label class="form-label"><strong>Mois à déduire de l'ancienneté</strong><br>
         <span style="font-size:.7rem">Périodes réduisant l'ancienneté pour le calcul de l'IL · <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F371" target="_blank" style="color:var(--a)">Voir les cas concernés</a></span></label>
-        <input class="form-input" type="number" id="i-mois-ded" placeholder="0" min="0" step="1" value="0" style="max-width:120px">
+        <input class="form-input" type="number" id="i-mois-ded" placeholder="0" min="0" step="1" value="0" style="max-width:120px" onblur="this.value=parseInt(this.value)||0">
       </div>
       <div class="form-group">
         <label class="form-label"><strong>Date de notification</strong> du licenciement</label>
@@ -307,11 +307,11 @@ footer a{color:var(--a);text-decoration:none}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
         <div class="form-group">
           <label class="form-label"><strong>Salaire brut moyen — 12 derniers mois</strong><br><span style="font-size:.72rem">Inclure primes obligatoires/conventionnelles non discrétionnaires et AEN</span></label>
-          <input class="form-input" type="number" id="i-s12" placeholder="ex: 3250.00" step="0.01" min="0">
+          <input class="form-input" type="number" id="i-s12" placeholder="ex: 3250.00" step="0.01" min="0" onblur="this.value=parseFloat(this.value)||''">
         </div>
         <div class="form-group">
           <label class="form-label"><strong>Salaire brut moyen — 3 derniers mois</strong><br><span style="font-size:.72rem">Inclure les primes au prorata des 3 mois (primes non discrétionnaires versées sur la période)</span></label>
-          <input class="form-input" type="number" id="i-s3" placeholder="ex: 3500.00" step="0.01" min="0">
+          <input class="form-input" type="number" id="i-s3" placeholder="ex: 3500.00" step="0.01" min="0" onblur="this.value=parseFloat(this.value)||''">
         </div>
       </div>
     </div>
@@ -481,12 +481,12 @@ function updateMoyennes(prefix, nbMois, moy12Id, moy3Id, srefId) {
   var vals12 = [], vals3 = [];
   for (var i = 0; i < nbMois; i++) {
     var el = document.getElementById(prefix + 'sal-' + i);
-    var v = el ? (parseFloat(el.value) || 0) : 0;
+    var v = el ? (parseFloat(el.valueAsNumber) || 0) : 0;
     vals12.push(v);
     if (i < 3) {
       var elp = document.getElementById(prefix + 'prime-' + i);
-      var corrige = elp ? elp.value : '';
-      var v3 = (corrige !== '' && !isNaN(parseFloat(corrige))) ? parseFloat(corrige) : v;
+      var corrige = elp ? elp.valueAsNumber : NaN;
+	  var v3 = (!isNaN(corrige)) ? corrige : v;
       vals3.push(v3);
     }
   }
@@ -547,7 +547,7 @@ function calculer() {
   var mt = (dateFin.getFullYear() - dateEntree.getFullYear()) * 12
          + (dateFin.getMonth() - dateEntree.getMonth());
   if (dateFin.getDate() < dateEntree.getDate()) mt--;
-  var moisDed = parseInt(document.getElementById('i-mois-ded').value) || 0;
+  var moisDed = parseInt(document.getElementById('i-mois-ded').valueAsNumber) || 0;
   if (moisDed < 0) moisDed = 0;
   mt = mt - moisDed;
   if (mt < 0) mt = 0;
@@ -577,13 +577,13 @@ function calculer() {
     var total12 = 0, total3 = 0, manquants = 0;
     for (var i = 0; i < nbMoisCalc; i++) {
       var el = document.getElementById(pfx + 'sal-' + i);
-      var v = el ? parseFloat(el.value || '') : NaN;
+      var v = el ? parseFloat(el.valueAsNumber) : NaN;
       if (isNaN(v) || v < 0) { manquants++; continue; }
       total12 += v;
       if (i < 3) {
         var elp = document.getElementById(pfx + 'prime-' + i);
-        var corrige = elp ? elp.value : '';
-        var v3 = (corrige !== '' && !isNaN(parseFloat(corrige))) ? parseFloat(corrige) : v;
+        var corrige = elp ? elp.valueAsNumber : NaN;
+	    var v3 = (!isNaN(corrige)) ? corrige : v;
         total3 += v3;
       }
     }
@@ -591,8 +591,8 @@ function calculer() {
     sal12 = total12 / nbMoisCalc;
     sal3  = total3 / 3;
   } else {
-    sal12 = parseFloat(document.getElementById('i-s12').value);
-    sal3  = parseFloat(document.getElementById('i-s3').value);
+    sal12 = parseFloat(document.getElementById('i-s12').valueAsNumber);
+	sal3  = parseFloat(document.getElementById('i-s3').valueAsNumber);
     if (isNaN(sal12) || sal12 <= 0) return showError("Veuillez saisir un salaire moyen 12 mois valide.");
     if (isNaN(sal3)  || sal3  <= 0) return showError("Veuillez saisir un salaire moyen 3 mois valide.");
   }
