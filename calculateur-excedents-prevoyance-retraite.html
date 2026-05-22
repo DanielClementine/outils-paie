@@ -1379,40 +1379,45 @@ function calculer() {
 			// ============================================
 			const p = new URLSearchParams(window.location.search);
 
-			// Année
-			if (p.get('annee')) {
-				const anneeSelect = document.getElementById('annee');
-				const annee = p.get('annee');
-				if (['2024','2025','2026'].includes(annee)) {
-					anneeSelect.value = annee;
-					document.getElementById('pass').value = PASS_VALUES[parseInt(annee)];
-				} else {
-					anneeSelect.value = 'custom';
-					document.getElementById('customYearGroup').style.display = 'block';
-					document.getElementById('anneeCustom').value = annee;
+			// Vérifier si des paramètres URL sont présents
+			const hasUrlParams = window.location.search.length > 1;
+
+			if (hasUrlParams) {
+				// Année
+				if (p.get('annee')) {
+					const anneeSelect = document.getElementById('annee');
+					const annee = p.get('annee');
+					if (['2024','2025','2026'].includes(annee)) {
+						anneeSelect.value = annee;
+						document.getElementById('pass').value = PASS_VALUES[parseInt(annee)];
+					} else {
+						anneeSelect.value = 'custom';
+						document.getElementById('customYearGroup').style.display = 'block';
+						document.getElementById('anneeCustom').value = annee;
+					}
 				}
-			}
 
-			// PASS (override manuel si fourni)
-			if (p.get('pass')) document.getElementById('pass').value = p.get('pass');
+				// PASS (override manuel si fourni explicitement)
+				if (p.get('pass')) document.getElementById('pass').value = p.get('pass');
 
-			// Rémunérations
-			if (p.get('remBruteSS'))            document.getElementById('remBruteSS').value = p.get('remBruteSS');
-			if (p.get('remBruteImposable'))     document.getElementById('remBruteImposable').value = p.get('remBruteImposable');
-			if (p.get('cotisationsSoumisesSS')) document.getElementById('cotisationsSoumisesSS').value = p.get('cotisationsSoumisesSS');
+				// Rémunérations
+				if (p.get('remBruteSS'))            document.getElementById('remBruteSS').value = p.get('remBruteSS');
+				if (p.get('remBruteImposable'))     document.getElementById('remBruteImposable').value = p.get('remBruteImposable');
+				if (p.get('cotisationsSoumisesSS')) document.getElementById('cotisationsSoumisesSS').value = p.get('cotisationsSoumisesSS');
 
-			// Retraite supplémentaire
-			if (p.get('retraite_patronale'))    document.getElementById('retraite_patronale').value = p.get('retraite_patronale');
-			if (p.get('retraite_salariale'))    document.getElementById('retraite_salariale').value = p.get('retraite_salariale');
+				// Retraite supplémentaire
+				if (p.get('retraite_patronale'))    document.getElementById('retraite_patronale').value = p.get('retraite_patronale');
+				if (p.get('retraite_salariale'))    document.getElementById('retraite_salariale').value = p.get('retraite_salariale');
 
-			// Prévoyance
-			if (p.get('prev_patronale_horsFS')) document.getElementById('prev_patronale_horsFS').value = p.get('prev_patronale_horsFS');
-			if (p.get('prev_patronale_FS'))     document.getElementById('prev_patronale_FS').value = p.get('prev_patronale_FS');
-			if (p.get('prev_salariale_total'))  document.getElementById('prev_salariale_total').value = p.get('prev_salariale_total');
+				// Prévoyance
+				if (p.get('prev_patronale_horsFS')) document.getElementById('prev_patronale_horsFS').value = p.get('prev_patronale_horsFS');
+				if (p.get('prev_patronale_FS'))     document.getElementById('prev_patronale_FS').value = p.get('prev_patronale_FS');
+				if (p.get('prev_salariale_total'))  document.getElementById('prev_salariale_total').value = p.get('prev_salariale_total');
 
-			// Lancer le calcul automatiquement si au moins une valeur est passée
-			if (window.location.search.length > 1) {
-				calculer();
+				// Lancer le calcul automatiquement APRÈS que tous les champs sont remplis
+				setTimeout(function() {
+					calculer();
+				}, 100);
 			}
 		});
     </script>
