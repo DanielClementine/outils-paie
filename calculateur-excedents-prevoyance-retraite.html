@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur Excédents Prévoyance & Retraite Supplémentaire</title>
+    <style>
+        /* ============================================
+           STYLES GÉNÉRAUX
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* ============================================
+           ALERTES ET MESSAGES
+           ============================================ */
+        .alert {
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .alert.warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        /* ============================================
+           SECTIONS ET CARTES
+           ============================================ */
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title .icon {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        /* ============================================
+           FORMULAIRES
+           ============================================ */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        label .help-text {
+            font-weight: normal;
+            color: #6c757d;
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        input:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        /* ============================================
+           BOUTONS
+           ============================================ */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        /* ============================================
+           RÉSULTATS
+           ============================================ */
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .result-card.social {
+            border-left-color: #e74c3c;
+        }
+
+        .result-card.fiscal {
+            border-left-color: #27ae60;
+        }
+
+        .result-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e74c3c;
+            padding: 15px;
+            background: #fff5f5;
+            border-radius: 5px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .highlight-amount.positive {
+            color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .action-guide {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .action-guide h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .action-guide ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        /* ============================================
+           TABLEAU RÉCAPITULATIF
+           ============================================ */
+        .summary-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        .summary-table th {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .summary-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .summary-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+
+        /* ============================================
+           IMPRESSION
+           ============================================ */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            button {
+                display: none;
+            }
+
+            .results {
+                display: block !important;
+            }
+        }
+
+        /* ============================================
+           UTILITAIRES
+           ============================================ */
+        .text-muted {
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>📊 Calculateur Excédents Prévoyance & Retraite Supplémentaire</h1>
+            <p>Régime applicable à compter de 2016 - Outil professionnel pour gestionnaires paie</p>
+        </div>
+
+        <!-- ALERTE ANNÉE ANTÉRIEURE -->
+        <div class="alert warning" id="yearWarning">
+            ⚠️ <strong>Attention :</strong> Ce calculateur prend en compte le régime applicable à compter de 2016. 
+            Les règles peuvent être différentes pour les années antérieures.
+        </div>
+
+        <div class="content">
+            <!-- SECTION 1 : PARAMÈTRES -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">⚙️</span>
+                    Paramètres de calcul
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="annee">
+                            Année de calcul
+                            <span class="help-text">Sélectionnez l'année ou saisissez une année personnalisée</span>
+                        </label>
+                        <select id="annee">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="custom">Autre année...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="customYearGroup" style="display: none;">
+                        <label for="anneeCustom">
+                            Année personnalisée
+                            <span class="help-text">Saisissez une année ≥ 2016</span>
+                        </label>
+                        <input type="number" id="anneeCustom" min="2016" max="2099" placeholder="Ex: 2023">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pass">
+                            PASS (Plafond Annuel Sécurité Sociale)
+                            <span class="help-text">Modifiable selon vos besoins</span>
+                        </label>
+                        <input type="number" id="pass" step="0.01" value="48060">
+                    </div>
+                </div>
+
+                <!-- Paramètres de calcul détaillés -->
+                <div style="margin-top: 30px;">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">Paramètres de calcul (modifiables)</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <!-- Retraite Sociale -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #e0e0e0;">
+                            <h4 style="color: #e74c3c; margin-bottom: 10px;">🔴 Retraite - Régime Social</h4>
+                            <div class="form-group">
+                                <label>% PASS (option 1)</label>
+                                <input type="number" id="retraite_social_pct_pass" value="5" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>% Rémunération (option 2)</label>
+                                <input type="number" id="retraite_social_pct_rem" value="5" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>Limite plafond (en x PASS)</label>
+                                <input type="number" id="retraite_social_limite_pass" value="5" step="0.1">
+                            </div>
+                        </div>
+
+                        <!-- Retraite Fiscale -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #e0e0e0;">
+                            <h4 style="color: #27ae60; margin-bottom: 10px;">🟢 Retraite - Régime Fiscal</h4>
+                            <div class="form-group">
+                                <label>% Rémunération imposable</label>
+                                <input type="number" id="retraite_fiscal_pct_rem" value="8" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>Limite plafond (en x PASS)</label>
+                                <input type="number" id="retraite_fiscal_limite_pass" value="8" step="0.1">
+                            </div>
+                        </div>
+
+                        <!-- Prévoyance Sociale -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #e0e0e0;">
+                            <h4 style="color: #e74c3c; margin-bottom: 10px;">🔴 Prévoyance - Régime Social</h4>
+                            <div class="form-group">
+                                <label>% PASS</label>
+                                <input type="number" id="prev_social_pct_pass" value="6" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>% Rémunération</label>
+                                <input type="number" id="prev_social_pct_rem" value="1.5" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>Plafond maximum (% PASS)</label>
+                                <input type="number" id="prev_social_plafond" value="12" step="0.1">
+                            </div>
+                        </div>
+
+                        <!-- Prévoyance Fiscale -->
+                        <div style="background: white; padding: 15px; border-radius: 5px; border: 1px solid #e0e0e0;">
+                            <h4 style="color: #27ae60; margin-bottom: 10px;">🟢 Prévoyance - Régime Fiscal</h4>
+                            <div class="form-group">
+                                <label>% PASS</label>
+                                <input type="number" id="prev_fiscal_pct_pass" value="5" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>% Rémunération imposable</label>
+                                <input type="number" id="prev_fiscal_pct_rem" value="2" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>Plafond maximum (% de 8 x PASS)</label>
+                                <input type="number" id="prev_fiscal_plafond" value="2" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SECTION 3 : RÉMUNÉRATIONS -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">💰</span>
+                    Rémunérations et assiettes
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="remBruteSS">
+                            Rémunération annuelle brute soumise à cotisations SS
+                            <span class="help-text">Base pour le régime social</span>
+                        </label>
+                        <input type="number" id="remBruteSS" step="0.01" value="0" placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="remBruteImposable">
+                            Rémunération annuelle brute imposable
+                            <span class="help-text">Base pour le régime fiscal (inclut part patronale frais santé, l’intéressement et la participation versés directement au salarié…)</span>
+                        </label>
+                        <input type="number" id="remBruteImposable" step="0.01" value="0" placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cotisationsSoumisesSS">
+                            Contributions déjà soumises à cotisations SS
+                            <span class="help-text">Régimes facultatifs, etc. (à déduire de l'assiette)</span>
+                        </label>
+                        <input type="number" id="cotisationsSoumisesSS" step="0.01" value="0" placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4 : COTISATIONS RETRAITE SUPPLÉMENTAIRE -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🏦</span>
+                    Cotisations Retraite Supplémentaire
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="retraite_patronale">
+                            Part patronale (€)
+                            <span class="help-text">Cotisations employeur retraite supplémentaire</span>
+                        </label>
+                        <input type="number" id="retraite_patronale" step="0.01" value="0" placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="retraite_salariale">
+                            Part salariale (€)
+                            <span class="help-text">Cotisations salarié retraite supplémentaire</span>
+                        </label>
+                        <input type="number" id="retraite_salariale" step="0.01" value="0" placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5 : COTISATIONS PRÉVOYANCE -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🛡️</span>
+                    Cotisations Prévoyance Complémentaire
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="prev_patronale_horsFS">
+                            Part patronale HORS frais de santé (€)
+                            <span class="help-text">Incapacité, invalidité, décès, dépendance</span>
+                        </label>
+                        <input type="number" id="prev_patronale_horsFS" step="0.01" value="0" placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prev_patronale_FS">
+                            Part patronale frais de santé (€)
+                            <span class="help-text">Imposable dès le 1er euro</span>
+                        </label>
+                        <input type="number" id="prev_patronale_FS" step="0.01" value="0" placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prev_salariale_total">
+                            Part salariale TOTALE (€)
+                            <span class="help-text">Incluant frais de santé + autres garanties</span>
+                        </label>
+                        <input type="number" id="prev_salariale_total" step="0.01" value="0" placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOUTONS D'ACTION -->
+            <div class="button-group">
+                <button class="btn-primary" onclick="calculer()">
+                    🧮 Calculer les excédents
+                </button>
+                <button class="btn-secondary" onclick="reinitialiser()">
+                    🔄 Réinitialiser
+                </button>
+                <button class="btn-success" onclick="imprimerPDF()" style="display: none;" id="btnPDF">
+                    📄 Imprimer / PDF
+                </button>
+            </div>
+
+            <!-- RÉSULTATS -->
+            <div class="results" id="results">
+                <!-- Les résultats seront générés dynamiquement par JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION DES VALEURS PASS PAR ANNÉE
+        // ============================================
+        // IMPORTANT : Pour mettre à jour les valeurs PASS, modifiez simplement les valeurs ci-dessous
+        const PASS_VALUES = {
+            2026: 48060,  // PASS 2026 - MODIFIABLE ICI
+            2025: 47100,  // PASS 2025 - MODIFIABLE ICI
+            2024: 46368   // PASS 2024 - MODIFIABLE ICI
+        };
+
+        // ============================================
+        // GESTION DES ÉVÉNEMENTS DU FORMULAIRE
+        // ============================================
+
+        // Mise à jour du PASS selon l'année sélectionnée
+        document.getElementById('annee').addEventListener('change', function() {
+            const annee = this.value;
+            const customYearGroup = document.getElementById('customYearGroup');
+            const passInput = document.getElementById('pass');
+            const yearWarning = document.getElementById('yearWarning');
+
+            if (annee === 'custom') {
+                customYearGroup.style.display = 'block';
+                passInput.value = '';
+            } else {
+                customYearGroup.style.display = 'none';
+                passInput.value = PASS_VALUES[annee] || '';
+                
+                // Afficher l'alerte si année < 2016
+                if (parseInt(annee) < 2016) {
+                    yearWarning.style.display = 'block';
+                } else {
+                    yearWarning.style.display = 'none';
+                }
+            }
+        });
+
+        // Gestion année personnalisée
+        document.getElementById('anneeCustom').addEventListener('change', function() {
+            const customYear = parseInt(this.value);
+            const yearWarning = document.getElementById('yearWarning');
+            
+            if (customYear < 2016) {
+                yearWarning.style.display = 'block';
+            } else {
+                yearWarning.style.display = 'none';
+            }
+        });
+
+// ============================================
+// FONCTION PRINCIPALE DE CALCUL
+// ============================================
+function calculer() {
+    // Récupération de tous les paramètres
+    const params = getFormValues();
+    
+    // Validation des données
+    if (!validateInputs(params)) {
+        return;
+    }
+    
+    // Utilisation du PASS selon la méthode choisie
+    const passSocial = params.pass;
+    
+    // 🆕 CALCUL DE LA RÉMUNÉRATION NETTE POUR CALCULS SOCIAUX
+    const remNetteCalcSocial = params.remBruteSS - params.cotisationsSoumisesSS;
+    
+    // CALCULS RETRAITE SUPPLÉMENTAIRE
+    const retraiteResults = calculerRetraite(params, passSocial, remNetteCalcSocial);
+    
+    // CALCULS PRÉVOYANCE
+    const prevoyanceResults = calculerPrevoyance(params, passSocial, remNetteCalcSocial);
+    
+    // ============================================
+    // AFFICHAGE DES RÉSULTATS
+    // ============================================
+    afficherResultats(retraiteResults, prevoyanceResults, params, passSocial, remNetteCalcSocial);
+}
+
+        // ============================================
+        // FONCTION : RÉCUPÉRATION DES VALEURS DU FORMULAIRE
+        // ============================================
+		function getFormValues() {
+			const annee = document.getElementById('annee').value;
+			const customYear = document.getElementById('anneeCustom').value;
+			const pass = parseFloat(document.getElementById('pass').value);
+			const methodePASS = document.getElementById('methode-pass').value;
+			
+			// Rémunérations
+			const remBruteSS = parseFloat(document.getElementById('remBruteSS').value) || 0;
+			const remBruteImposable = parseFloat(document.getElementById('remBruteImposable').value) || 0;
+			const cotisationsSoumisesSS = parseFloat(document.getElementById('cotisationsSoumisesSS').value) || 0;
+			
+			// Cotisations retraite supplémentaire
+			const retraite_patronale = parseFloat(document.getElementById('retraite_patronale').value) || 0;
+			const retraite_salariale = parseFloat(document.getElementById('retraite_salariale').value) || 0;
+			
+			// Cotisations prévoyance
+			const prev_patronale_horsFS = parseFloat(document.getElementById('prev_patronale_horsFS').value) || 0;
+			const prev_patronale_FS = parseFloat(document.getElementById('prev_patronale_FS').value) || 0;
+			const prev_salariale_total = parseFloat(document.getElementById('prev_salariale_total').value) || 0;
+			
+			// Paramètres de calcul - Retraite Social
+			const retraite_social_pct_pass = parseFloat(document.getElementById('retraite_social_pct_pass').value) / 100;
+			const retraite_social_pct_rem = parseFloat(document.getElementById('retraite_social_pct_rem').value) / 100;
+			const retraite_social_limite_pass = parseFloat(document.getElementById('retraite_social_limite_pass').value);
+			
+			// Paramètres de calcul - Retraite Fiscal
+			const retraite_fiscal_pct_rem = parseFloat(document.getElementById('retraite_fiscal_pct_rem').value) / 100;
+			const retraite_fiscal_limite_pass = parseFloat(document.getElementById('retraite_fiscal_limite_pass').value);
+			
+			// Paramètres de calcul - Prévoyance Social
+			const prev_social_pct_pass = parseFloat(document.getElementById('prev_social_pct_pass').value) / 100;
+			const prev_social_pct_rem = parseFloat(document.getElementById('prev_social_pct_rem').value) / 100;
+			const prev_social_plafond = parseFloat(document.getElementById('prev_social_plafond').value) / 100;
+			
+			// Paramètres de calcul - Prévoyance Fiscal
+			const prev_fiscal_pct_pass = parseFloat(document.getElementById('prev_fiscal_pct_pass').value) / 100;
+			const prev_fiscal_pct_rem = parseFloat(document.getElementById('prev_fiscal_pct_rem').value) / 100;
+			const prev_fiscal_plafond = parseFloat(document.getElementById('prev_fiscal_plafond').value) / 100;
+			
+			return {
+				annee: annee === 'custom' ? parseInt(customYear) : parseInt(annee),
+				pass,
+				methodePASS,
+				// Rémunérations
+				remBruteSS,
+				remBruteImposable,
+				cotisationsSoumisesSS,
+				// Cotisations retraite
+				retraite_patronale,
+				retraite_salariale,
+				retraiteTotal: retraite_patronale + retraite_salariale,
+				// Cotisations prévoyance
+				prev_patronale_horsFS,
+				prev_patronale_FS,
+				prev_salariale_total,
+				prevTotal: prev_patronale_horsFS + prev_salariale_total,
+				// Paramètres de calcul
+				retraite_social_pct_pass,
+				retraite_social_pct_rem,
+				retraite_social_limite_pass,
+				retraite_fiscal_pct_rem,
+				retraite_fiscal_limite_pass,
+				prev_social_pct_pass,
+				prev_social_pct_rem,
+				prev_social_plafond,
+				prev_fiscal_pct_pass,
+				prev_fiscal_pct_rem,
+				prev_fiscal_plafond
+			};
+		}
+
+        // ============================================
+        // FONCTION : VALIDATION DES DONNÉES SAISIES
+        // ============================================
+        function validateInputs(params) {
+            if (params.pass <= 0) {
+                alert('⚠️ Veuillez saisir un PASS valide');
+                return false;
+            }
+
+            if (params.annee < 2016) {
+                if (!confirm('⚠️ Attention : Ce calculateur s\'applique au régime à compter de 2016. Voulez-vous continuer ?')) {
+                    return false;
+                }
+            }
+
+            if (params.tempsPartiel === 'oui' && (params.tauxTempsPartiel <= 0 || params.tauxTempsPartiel > 1)) {
+                alert('⚠️ Le taux de temps partiel doit être entre 0 et 1');
+                return false;
+            }
+
+            return true;
+        }
+
+        // ============================================
+        // FONCTION : CALCULS RETRAITE SUPPLÉMENTAIRE
+        // ============================================
+        function calculerRetraite(params, passSocial, remNetteCalcSocial) {
+            const results = {};
+
+            // ═══════════════════════════════════════════
+            // RÉGIME SOCIAL - RETRAITE SUPPLÉMENTAIRE
+            // ═══════════════════════════════════════════
+            
+            // Option 1 : 5% du PASS proratisé
+            const option1 = passSocial * params.retraite_social_pct_pass;
+            
+            // Option 2 : 5% de la rémunération (limitée à 5 x PASS)
+            const remLimitee = Math.min(remNetteCalcSocial, params.retraite_social_limite_pass * passSocial);
+            const option2 = remLimitee * params.retraite_social_pct_rem;
+            
+            // Limite d'exonération = la plus élevée des deux
+            results.social_limite = Math.max(option1, option2);
+            
+            // Total des cotisations retraite
+            results.social_total_cotisations = params.retraite_patronale;
+            
+            // Excédent à réintégrer
+            results.social_excedent = Math.max(0, results.social_total_cotisations - results.social_limite);
+            
+            // Formules pour affichage
+            results.social_formule_option1 = `${passSocial.toFixed(2)} × ${(params.retraite_social_pct_pass * 100).toFixed(1)}% = ${option1.toFixed(2)} €`;
+            results.social_formule_option2 = `min(${remNetteCalcSocial.toFixed(2)}, ${(params.retraite_social_limite_pass * passSocial).toFixed(2)}) × ${(params.retraite_social_pct_rem * 100).toFixed(1)}% = ${option2.toFixed(2)} €`;
+
+            // ═══════════════════════════════════════════
+            // RÉGIME FISCAL - RETRAITE SUPPLÉMENTAIRE
+            // ═══════════════════════════════════════════
+            
+            // Limite : 8% de la rémunération imposable (limitée à 8 x PASS)
+            // ATTENTION : Le PASS n'est PAS proratisé en régime fiscal
+            const remImposableLimitee = Math.min(params.remBruteImposable, params.retraite_fiscal_limite_pass * params.pass);
+            results.fiscal_limite = remImposableLimitee * params.retraite_fiscal_pct_rem;
+            
+            // Total des cotisations
+            results.fiscal_total_cotisations = params.retraite_patronale + params.retraite_salariale;
+            
+            // Excédent
+            results.fiscal_excedent = Math.max(0, results.fiscal_total_cotisations - results.fiscal_limite);
+            
+            // Ventilation part patronale / salariale de l'excédent fiscal
+            if (results.fiscal_excedent > 0) {
+                const totalCotisations = params.retraite_patronale + params.retraite_salariale;
+                results.fiscal_excedent_patronal = results.fiscal_excedent * (params.retraite_patronale / totalCotisations);
+                results.fiscal_excedent_salarial = results.fiscal_excedent * (params.retraite_salariale / totalCotisations);
+            } else {
+                results.fiscal_excedent_patronal = 0;
+                results.fiscal_excedent_salarial = 0;
+            }
+            
+            // Formule
+            results.fiscal_formule = `min(${params.remBruteImposable.toFixed(2)}, ${(params.retraite_fiscal_limite_pass * params.pass).toFixed(2)}) × ${(params.retraite_fiscal_pct_rem * 100).toFixed(1)}% = ${results.fiscal_limite.toFixed(2)} €`;
+
+            return results;
+        }
+
+        // ============================================
+        // FONCTION : CALCULS PRÉVOYANCE
+        // ============================================
+        function calculerPrevoyance(params, passSocial, remNetteCalcSocial) {
+            const results = {};
+
+            // ═══════════════════════════════════════════
+            // RÉGIME SOCIAL - PRÉVOYANCE
+            // ═══════════════════════════════════════════
+            
+            // Calcul : (6% PASS) + (1.5% Rémunération), plafonné à 12% PASS
+            const partie1 = passSocial * params.prev_social_pct_pass;
+            const partie2 = remNetteCalcSocial * params.prev_social_pct_rem;
+            const somme = partie1 + partie2;
+            const plafond = passSocial * params.prev_social_plafond;
+            
+            results.social_limite = Math.min(somme, plafond);
+            
+            // Total cotisations prévoyance patronales (incluant frais santé)
+            results.social_total_cotisations = params.prev_patronale_horsFS + params.prev_patronale_FS;
+            
+            // Excédent
+            results.social_excedent = Math.max(0, results.social_total_cotisations - results.social_limite);
+            
+            // Formules
+            results.social_formule = `(${passSocial.toFixed(2)} × ${(params.prev_social_pct_pass * 100).toFixed(1)}%) + (${remNetteCalcSocial.toFixed(2)} × ${(params.prev_social_pct_rem * 100).toFixed(1)}%) = ${somme.toFixed(2)} €`;
+            results.social_plafond_formule = `Plafond = ${passSocial.toFixed(2)} × ${(params.prev_social_plafond * 100).toFixed(1)}% = ${plafond.toFixed(2)} €`;
+
+            // ═══════════════════════════════════════════
+            // RÉGIME FISCAL - PRÉVOYANCE
+            // ═══════════════════════════════════════════
+            
+            // Calcul : (5% PASS) + (2% Rémunération imposable), plafonné à 2% de 8 x PASS
+            // ATTENTION : Le PASS n'est PAS proratisé en régime fiscal
+            const partieF1 = params.pass * params.prev_fiscal_pct_pass;
+            const partieF2 = params.remBruteImposable * params.prev_fiscal_pct_rem;
+            const sommeF = partieF1 + partieF2;
+            const plafondF = params.pass * 8 * params.prev_fiscal_plafond;
+            
+            results.fiscal_limite = Math.min(sommeF, plafondF);
+            
+            // Total cotisations = part patronale (hors FS) + part salariale totale
+            results.fiscal_total_cotisations = params.prev_patronale_horsFS + params.prev_salariale_total;
+            
+            // Excédent
+            results.fiscal_excedent = Math.max(0, results.fiscal_total_cotisations - results.fiscal_limite);
+            
+            // Ventilation
+            if (results.fiscal_excedent > 0) {
+                const totalCotisations = params.prev_patronale_horsFS + params.prev_salariale_total;
+                results.fiscal_excedent_patronal = results.fiscal_excedent * (params.prev_patronale_horsFS / totalCotisations);
+                results.fiscal_excedent_salarial = results.fiscal_excedent * (params.prev_salariale_total / totalCotisations);
+            } else {
+                results.fiscal_excedent_patronal = 0;
+                results.fiscal_excedent_salarial = 0;
+            }
+            
+            // Formules
+            results.fiscal_formule = `(${params.pass.toFixed(2)} × ${(params.prev_fiscal_pct_pass * 100).toFixed(1)}%) + (${params.remBruteImposable.toFixed(2)} × ${(params.prev_fiscal_pct_rem * 100).toFixed(1)}%) = ${sommeF.toFixed(2)} €`;
+            results.fiscal_plafond_formule = `Plafond = ${params.pass.toFixed(2)} × 8 × ${(params.prev_fiscal_plafond * 100).toFixed(1)}% = ${plafondF.toFixed(2)} €`;
+
+            // Part patronale frais de santé (toujours imposable)
+            results.fiscal_fs_patronal = params.prev_patronale_FS;
+
+            return results;
+        }
+
+        // ============================================
+        // FONCTION : AFFICHAGE DES RÉSULTATS
+        // ============================================
+        function afficherResultats(retraite, prevoyance, params, passSocial, remNetteCalcSocial) {
+            const resultsDiv = document.getElementById('results');
+            let html = `
+                <h2 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">
+                    📊 Résultats des calculs - Année ${params.annee}
+                </h2>
+
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <!-- RETRAITE SUPPLÉMENTAIRE - RÉGIME SOCIAL -->
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <div class="result-card social">
+                    <div class="result-header">
+                        🔴 RETRAITE SUPPLÉMENTAIRE - Régime Social
+                    </div>
+
+					<div class="formula">
+						<strong>📊 Calcul de la limite d'exonération sociale</strong><br><br>
+						
+						<strong>Option 1 : ${(params.retraite_social_pct_pass * 100).toFixed(1)}% du PASS</strong><br>
+						• ${passSocial.toFixed(2)} € × ${(params.retraite_social_pct_pass * 100).toFixed(1)}% = 
+						  <strong>${(passSocial * params.retraite_social_pct_pass).toFixed(2)} €</strong><br><br>
+						
+						<strong>Option 2 : ${(params.retraite_social_pct_rem * 100).toFixed(1)}% de la rémunération (limitée à ${params.retraite_social_limite_pass} × PASS)</strong><br>
+						• Rémunération annuelle brute SS : ${remNetteCalcSocial.toFixed(2)} €<br>
+						• Plafond maximum : ${(params.retraite_social_limite_pass * passSocial).toFixed(2)} € 
+						  (${params.retraite_social_limite_pass} × ${passSocial.toFixed(2)})<br>
+						• Assiette retenue : <strong>${(Math.min(remNetteCalcSocial, params.retraite_social_limite_pass * passSocial)).toFixed(2)} €</strong><br>
+						• ${(Math.min(remNetteCalcSocial, params.retraite_social_limite_pass * passSocial)).toFixed(2)} € × ${(params.retraite_social_pct_rem * 100).toFixed(1)}% = 
+						  <strong>${(Math.min(remNetteCalcSocial, params.retraite_social_limite_pass * passSocial) * params.retraite_social_pct_rem).toFixed(2)} €</strong><br><br>
+						
+						<strong style="color: #e74c3c; font-size: 16px;">✅ Limite retenue = MAX(Option 1, Option 2) = ${retraite.social_limite.toFixed(2)} €</strong><br>
+						<em style="color: #6c757d; font-size: 13px;">(On retient la plus favorable des deux options)</em>
+					</div>
+
+					<table class="result-table">
+						<tr>
+							<th>Élément</th>
+							<th>Montant</th>
+						</tr>
+						<tr>
+							<td>Cotisations patronales</td>
+							<td>${params.retraite_patronale.toFixed(2)} €</td>
+						</tr>
+						<tr style="font-weight: 600; background: #f8f9fa;">
+							<td>Total cotisations patronales à comparer</td>
+							<td>${retraite.social_total_cotisations.toFixed(2)} €</td>
+						</tr>
+						<tr>
+							<td>Limite d'exonération sociale</td>
+							<td>${retraite.social_limite.toFixed(2)} €</td>
+						</tr>
+					</table>
+
+                    <div class="highlight-amount ${retraite.social_excedent === 0 ? 'positive' : ''}">
+                        ${retraite.social_excedent === 0 ? '✅' : '⚠️'} 
+                        Excédent à réintégrer dans l'assiette SS : ${retraite.social_excedent.toFixed(2)} €
+                    </div>
+
+                    ${retraite.social_excedent > 0 ? `
+                        <div class="action-guide">
+                            <h4>📋 Actions à effectuer :</h4>
+                            <ul>
+                                <li>Réintégrer ${retraite.social_excedent.toFixed(2)} € dans l'assiette des cotisations de sécurité sociale</li>
+                                <li>Réintégrer dans l'assiette ARRCO/AGIRC (dans la limite des plafonds)</li>
+                                <li>L'excédent est déjà soumis à CSG/CRDS (pas de réintégration supplémentaire)</li>
+                                <li>Réduire l'assiette du forfait social de ${retraite.social_excedent.toFixed(2)} €</li>
+                            </ul>
+                        </div>
+                    ` : `
+                        <div class="action-guide" style="background: #d4edda; border-color: #28a745;">
+                            <h4 style="color: #155724;">✅ Aucune action requise</h4>
+                            <ul style="color: #155724;">
+                                <li>Les cotisations sont dans la limite d'exonération</li>
+                                <li>Pas de réintégration à effectuer</li>
+                            </ul>
+                        </div>
+                    `}
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <!-- RETRAITE SUPPLÉMENTAIRE - RÉGIME FISCAL -->
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <div class="result-card fiscal">
+                    <div class="result-header">
+                        🟢 RETRAITE SUPPLÉMENTAIRE - Régime Fiscal
+                    </div>
+
+                    <div class="formula">
+						<strong>📊 Calcul de la limite de déduction fiscale</strong><br><br>
+    
+						<strong>Étape 1 : Détermination de l'assiette</strong><br>
+						• Rémunération annuelle brute imposable : <strong>${params.remBruteImposable.toFixed(2)} €</strong><br>
+						• Plafond maximal (${params.retraite_fiscal_limite_pass} × PASS) : <strong>${(params.retraite_fiscal_limite_pass * params.pass).toFixed(2)} €</strong> 
+						(${params.retraite_fiscal_limite_pass} × ${params.pass.toFixed(2)})<br>
+						• ➜ Assiette retenue : <strong>${(Math.min(params.remBruteImposable, params.retraite_fiscal_limite_pass * params.pass)).toFixed(2)} €</strong> 
+						<em style="color: #6c757d;">(la plus petite des deux)</em><br><br>
+    
+						<strong>Étape 2 : Application du taux de déduction</strong><br>
+						• ${(Math.min(params.remBruteImposable, params.retraite_fiscal_limite_pass * params.pass)).toFixed(2)} € 
+						× ${(params.retraite_fiscal_pct_rem * 100).toFixed(1)}% = 
+						<strong>${retraite.fiscal_limite.toFixed(2)} €</strong><br><br>
+    
+						<strong style="color: #27ae60; font-size: 16px;">✅ Limite de déduction fiscale = ${retraite.fiscal_limite.toFixed(2)} €</strong>
+					</div>
+
+                    <table class="result-table">
+                        <tr>
+                            <th>Élément</th>
+                            <th>Montant</th>
+                        </tr>
+                        <tr>
+                            <td>Total cotisations (patronales + salariales)</td>
+                            <td>${retraite.fiscal_total_cotisations.toFixed(2)} €</td>
+                        </tr>
+                        <tr>
+                            <td>Limite de déduction fiscale</td>
+                            <td>${retraite.fiscal_limite.toFixed(2)} €</td>
+                        </tr>
+                        <tr style="font-weight: 600; background: #f8f9fa;">
+                            <td>Excédent fiscal total</td>
+                            <td>${retraite.fiscal_excedent.toFixed(2)} €</td>
+                        </tr>
+                    </table>
+
+                    ${retraite.fiscal_excedent > 0 ? `
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <h4 style="color: #856404; margin-bottom: 10px;">Ventilation de l'excédent fiscal :</h4>
+                            <table class="result-table">
+                                <tr>
+                                    <td>Part patronale (complément de salaire imposable)</td>
+                                    <td><strong>${retraite.fiscal_excedent_patronal.toFixed(2)} €</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Part salariale (non déductible)</td>
+                                    <td><strong>${retraite.fiscal_excedent_salarial.toFixed(2)} €</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="action-guide">
+                            <h4>📋 Actions à effectuer :</h4>
+                            <ul>
+                                <li>Ajouter au net imposable (part patronale) : ${retraite.fiscal_excedent_patronal.toFixed(2)} €</li>
+                                <li>Rendre non déductible (part salariale) : ${retraite.fiscal_excedent_salarial.toFixed(2)} €</li>
+                                <li>Total à ajouter au revenu imposable : ${retraite.fiscal_excedent.toFixed(2)} €</li>
+                            </ul>
+                        </div>
+                    ` : `
+                        <div class="action-guide" style="background: #d4edda; border-color: #28a745;">
+                            <h4 style="color: #155724;">✅ Aucune action requise</h4>
+                            <ul style="color: #155724;">
+                                <li>Les cotisations sont déductibles en totalité</li>
+                                <li>Pas de réintégration fiscale</li>
+                            </ul>
+                        </div>
+                    `}
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <!-- PRÉVOYANCE - RÉGIME SOCIAL -->
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <div class="result-card social">
+                    <div class="result-header">
+                        🔴 PRÉVOYANCE COMPLÉMENTAIRE - Régime Social
+                    </div>
+
+                    <div class="formula">
+                        <strong>Calcul de la limite d'exonération :</strong><br>
+                        ${prevoyance.social_formule}<br>
+                        ${prevoyance.social_plafond_formule}<br>
+                        <strong>Limite retenue = MIN(Somme, Plafond) = ${prevoyance.social_limite.toFixed(2)} €</strong>
+                    </div>
+
+                    <table class="result-table">
+                        <tr>
+                            <th>Élément</th>
+                            <th>Montant</th>
+                        </tr>
+                        <tr>
+                            <td>Part patronale (hors frais santé)</td>
+                            <td>${params.prev_patronale_horsFS.toFixed(2)} €</td>
+                        </tr>
+                        <tr>
+							<td>Part patronale frais de santé</td>
+							<td>${params.prev_patronale_FS.toFixed(2)} €</td>
+						</tr>
+                        <tr style="font-weight: 600; background: #f8f9fa;">
+                            <td>Total cotisations</td>
+                            <td>${prevoyance.social_total_cotisations.toFixed(2)} €</td>
+                        </tr>
+                        <tr>
+                            <td>Limite d'exonération sociale</td>
+                            <td>${prevoyance.social_limite.toFixed(2)} €</td>
+                        </tr>
+                    </table>
+
+                    <div class="highlight-amount ${prevoyance.social_excedent === 0 ? 'positive' : ''}">
+                        ${prevoyance.social_excedent === 0 ? '✅' : '⚠️'} 
+                        Excédent à réintégrer dans l'assiette SS : ${prevoyance.social_excedent.toFixed(2)} €
+                    </div>
+
+                    ${prevoyance.social_excedent > 0 ? `
+                        <div class="action-guide">
+                            <h4>📋 Actions à effectuer :</h4>
+                            <ul>
+                                <li>Réintégrer ${prevoyance.social_excedent.toFixed(2)} € dans l'assiette des cotisations de sécurité sociale</li>
+                                <li>Réintégrer dans l'assiette ARRCO/AGIRC (dans la limite des plafonds)</li>
+                                <li>L'excédent est déjà soumis à CSG/CRDS (pas de réintégration supplémentaire)</li>
+                                <li>Réduire l'assiette du forfait social de ${prevoyance.social_excedent.toFixed(2)} € (entreprises ≥ 11 salariés)</li>
+                            </ul>
+                        </div>
+                    ` : `
+                        <div class="action-guide" style="background: #d4edda; border-color: #28a745;">
+                            <h4 style="color: #155724;">✅ Aucune action requise</h4>
+                            <ul style="color: #155724;">
+                                <li>Les cotisations sont dans la limite d'exonération</li>
+                                <li>Pas de réintégration à effectuer</li>
+                            </ul>
+                        </div>
+                    `}
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <!-- PRÉVOYANCE - RÉGIME FISCAL -->
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <div class="result-card fiscal">
+                    <div class="result-header">
+                        🟢 PRÉVOYANCE COMPLÉMENTAIRE - Régime Fiscal
+                    </div>
+
+                    <div class="formula">
+                        <strong>Calcul de la limite de déduction :</strong><br>
+                        ${prevoyance.fiscal_formule}<br>
+                        ${prevoyance.fiscal_plafond_formule}<br>
+                        <strong>Limite de déduction fiscale = ${prevoyance.fiscal_limite.toFixed(2)} €</strong>
+                    </div>
+
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                        <strong>⚠️ Rappel important :</strong> La part patronale frais de santé est imposable dès le 1er euro = <strong>${prevoyance.fiscal_fs_patronal.toFixed(2)} €</strong>
+                    </div>
+
+                    <table class="result-table">
+                        <tr>
+                            <th>Élément</th>
+                            <th>Montant</th>
+                        </tr>
+                        <tr>
+                            <td>Total cotisations (hors FS patronal)</td>
+                            <td>${prevoyance.fiscal_total_cotisations.toFixed(2)} €</td>
+                        </tr>
+                        <tr>
+                            <td>Limite de déduction fiscale</td>
+                            <td>${prevoyance.fiscal_limite.toFixed(2)} €</td>
+                        </tr>
+                        <tr style="font-weight: 600; background: #f8f9fa;">
+                            <td>Excédent fiscal</td>
+                            <td>${prevoyance.fiscal_excedent.toFixed(2)} €</td>
+                        </tr>
+                    </table>
+
+                    ${prevoyance.fiscal_excedent > 0 ? `
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <h4 style="color: #856404; margin-bottom: 10px;">Ventilation de l'excédent fiscal :</h4>
+                            <table class="result-table">
+                                <tr>
+                                    <td>Part patronale (complément de salaire imposable)</td>
+                                    <td><strong>${prevoyance.fiscal_excedent_patronal.toFixed(2)} €</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Part salariale (non déductible)</td>
+                                    <td><strong>${prevoyance.fiscal_excedent_salarial.toFixed(2)} €</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+						<div class="action-guide">
+							<h4>📋 Régularisation fiscale annuelle à effectuer :</h4>
+							<ul>
+								<li>Part patronale de l'excédent (complément de salaire imposable) : <strong>${prevoyance.fiscal_excedent_patronal.toFixed(2)} €</strong></li>
+								<li>Part salariale de l'excédent (non déductible) : <strong>${prevoyance.fiscal_excedent_salarial.toFixed(2)} €</strong></li>
+								<li style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #ffc107;"><strong>📌 Total de la réintégration fiscale annuelle : ${prevoyance.fiscal_excedent.toFixed(2)} €</strong></li>
+							</ul>
+						</div>
+
+						<div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #3498db;">
+							<h4 style="color: #2c3e50; margin-bottom: 10px;">ℹ️ Pour information :</h4>
+							<ul style="color: #2c3e50; line-height: 1.8;">
+								<li>Part patronale frais de santé (déjà imposée mensuellement) : <strong>${prevoyance.fiscal_fs_patronal.toFixed(2)} €</strong></li>
+								<li>Total imposé annuellement au titre de la prévoyance : <strong>${(prevoyance.fiscal_fs_patronal + prevoyance.fiscal_excedent).toFixed(2)} €</strong> (${prevoyance.fiscal_fs_patronal.toFixed(2)} + ${prevoyance.fiscal_excedent.toFixed(2)})</li>
+							</ul>
+						</div>
+                    ` : `
+						<div class="action-guide" style="background: #d4edda; border-color: #28a745;">
+							<h4 style="color: #155724;">✅ Régularisation fiscale annuelle</h4>
+							<ul style="color: #155724;">
+								<li>Les cotisations (hors FS patronal) sont déductibles en totalité</li>
+								<li><strong>Pas de réintégration fiscale annuelle à effectuer : 0.00 €</strong></li>
+							</ul>
+						</div>
+
+						<div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #3498db;">
+							<h4 style="color: #2c3e50; margin-bottom: 10px;">ℹ️ Pour information :</h4>
+							<ul style="color: #2c3e50;">
+								<li>Part patronale frais de santé (déjà imposée mensuellement) : <strong>${prevoyance.fiscal_fs_patronal.toFixed(2)} €</strong></li>
+								<li>Total imposé annuellement au titre de la prévoyance : <strong>${prevoyance.fiscal_fs_patronal.toFixed(2)} €</strong></li>
+							</ul>
+						</div>
+                    `}
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <!-- TABLEAU RÉCAPITULATIF GLOBAL -->
+                <!-- ═══════════════════════════════════════════════════════════════════ -->
+                <div class="result-card" style="border-left-color: #6c757d; margin-top: 30px;">
+                    <div class="result-header">
+                        📊 Tableau Récapitulatif Global
+                    </div>
+
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Régime Social</th>
+                                <th>Régime Fiscal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Retraite Supplémentaire</strong></td>
+                                <td style="text-align: center; ${retraite.social_excedent > 0 ? 'background: #fff5f5; color: #e74c3c; font-weight: 600;' : 'color: #27ae60;'}">
+                                    ${retraite.social_excedent.toFixed(2)} €
+                                </td>
+                                <td style="text-align: center; ${retraite.fiscal_excedent > 0 ? 'background: #fff5f5; color: #e74c3c; font-weight: 600;' : 'color: #27ae60;'}">
+                                    ${retraite.fiscal_excedent.toFixed(2)} €
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prévoyance Complémentaire</strong></td>
+                                <td style="text-align: center; ${prevoyance.social_excedent > 0 ? 'background: #fff5f5; color: #e74c3c; font-weight: 600;' : 'color: #27ae60;'}">
+                                    ${prevoyance.social_excedent.toFixed(2)} €
+                                </td>
+                                <td style="text-align: center; ${prevoyance.fiscal_excedent > 0 ? 'background: #fff5f5; color: #e74c3c; font-weight: 600;' : 'color: #27ae60;'}">
+                                    ${prevoyance.fiscal_excedent.toFixed(2)} €
+                                </td>
+                            </tr>
+                            <tr style="background: #f8f9fa; font-weight: 600;">
+                                <td><strong>TOTAL EXCÉDENTS</strong></td>
+                                <td style="text-align: center; font-size: 18px; color: #e74c3c;">
+                                    ${(retraite.social_excedent + prevoyance.social_excedent).toFixed(2)} €
+                                </td>
+                                <td style="text-align: center; font-size: 18px; color: #e74c3c;">
+                                    ${(retraite.fiscal_excedent + prevoyance.fiscal_excedent).toFixed(2)} €
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Informations complémentaires -->
+                <div style="background: #e7f3ff; padding: 20px; border-radius: 5px; margin-top: 20px; border-left: 4px solid #3498db;">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">ℹ️ Informations complémentaires</h4>
+                    <ul style="color: #2c3e50; line-height: 1.8;">
+                        <li><strong>PASS utilisé :</strong> ${params.pass.toFixed(2)} € ${passSocial !== params.pass ? `(proratisé à ${passSocial.toFixed(2)} €)` : ''}</li>
+                        <li><strong>Année de calcul :</strong> ${params.annee}</li>
+                        <li><strong>CSG/CRDS :</strong> Les cotisations patronales sont assujetties à CSG/CRDS sans abattement tout au long de l'année</li>
+                        <li><strong>Forfait social :</strong> 
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Retraite supplémentaire : 20% sur la part exonérée</li>
+                                <li>Prévoyance : 8% sur la part exonérée (entreprises ≥ 11 salariés)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Taxe sur les salaires :</strong> Les contributions sont assujetties tout au long de l'année</li>
+                    </ul>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+            document.getElementById('btnPDF').style.display = 'flex';
+
+            // Scroll vers les résultats
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+		// ============================================
+		// FONCTION : RÉINITIALISATION DU FORMULAIRE
+		// ============================================
+		function reinitialiser() {
+			if (confirm('Voulez-vous vraiment réinitialiser tous les champs ?')) {
+				// Réinitialiser l'année à 2025
+				document.getElementById('annee').value = '2025';
+				document.getElementById('pass').value = PASS_VALUES[2025];
+				
+				// Masquer les groupes conditionnels
+				document.getElementById('customYearGroup').style.display = 'none';
+				document.getElementById('yearWarning').style.display = 'none';
+				
+				// Réinitialiser tous les paramètres de calcul
+				document.getElementById('retraite_social_pct_pass').value = '5';
+				document.getElementById('retraite_social_pct_rem').value = '5';
+				document.getElementById('retraite_social_limite_pass').value = '5';
+				document.getElementById('retraite_fiscal_pct_rem').value = '8';
+				document.getElementById('retraite_fiscal_limite_pass').value = '8';
+				document.getElementById('prev_social_pct_pass').value = '6';
+				document.getElementById('prev_social_pct_rem').value = '1.5';
+				document.getElementById('prev_social_plafond').value = '12';
+				document.getElementById('prev_fiscal_pct_pass').value = '5';
+				document.getElementById('prev_fiscal_pct_rem').value = '2';
+				document.getElementById('prev_fiscal_plafond').value = '2';
+				
+				// Réinitialiser la rémunération et les contributions
+				document.getElementById('remBruteSS').value = '0';
+				document.getElementById('remBruteImposable').value = '0';
+				document.getElementById('cotisationsSoumisesSS').value = '0';
+				document.getElementById('retraite_patronale').value = '0';
+				document.getElementById('retraite_salariale').value = '0';
+				document.getElementById('prev_patronale_horsFS').value = '0';
+				document.getElementById('prev_patronale_FS').value = '0';
+				document.getElementById('prev_salariale_total').value = '0';
+
+				// Masquer les résultats
+				document.getElementById('results').style.display = 'none';
+				document.getElementById('btnPDF').style.display = 'none';
+				
+				// Scroll vers le haut
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+		}
+
+        // ============================================
+        // FONCTION : IMPRESSION / EXPORT PDF
+        // ============================================
+        function imprimerPDF() {
+            window.print();
+        }
+
+        // ============================================
+        // INITIALISATION AU CHARGEMENT DE LA PAGE
+        // ============================================
+		document.addEventListener('DOMContentLoaded', function() {
+			// Définir le PASS par défaut pour 2026
+			document.getElementById('pass').value = PASS_VALUES[2026];
+
+			// ============================================
+			// LECTURE DES PARAMÈTRES URL (pré-remplissage)
+			// ============================================
+			const p = new URLSearchParams(window.location.search);
+
+			// Année
+			if (p.get('annee')) {
+				const anneeSelect = document.getElementById('annee');
+				const annee = p.get('annee');
+				if (['2024','2025','2026'].includes(annee)) {
+					anneeSelect.value = annee;
+					document.getElementById('pass').value = PASS_VALUES[parseInt(annee)];
+				} else {
+					anneeSelect.value = 'custom';
+					document.getElementById('customYearGroup').style.display = 'block';
+					document.getElementById('anneeCustom').value = annee;
+				}
+			}
+
+			// PASS (override manuel si fourni)
+			if (p.get('pass')) document.getElementById('pass').value = p.get('pass');
+
+			// Rémunérations
+			if (p.get('remBruteSS'))            document.getElementById('remBruteSS').value = p.get('remBruteSS');
+			if (p.get('remBruteImposable'))     document.getElementById('remBruteImposable').value = p.get('remBruteImposable');
+			if (p.get('cotisationsSoumisesSS')) document.getElementById('cotisationsSoumisesSS').value = p.get('cotisationsSoumisesSS');
+
+			// Retraite supplémentaire
+			if (p.get('retraite_patronale'))    document.getElementById('retraite_patronale').value = p.get('retraite_patronale');
+			if (p.get('retraite_salariale'))    document.getElementById('retraite_salariale').value = p.get('retraite_salariale');
+
+			// Prévoyance
+			if (p.get('prev_patronale_horsFS')) document.getElementById('prev_patronale_horsFS').value = p.get('prev_patronale_horsFS');
+			if (p.get('prev_patronale_FS'))     document.getElementById('prev_patronale_FS').value = p.get('prev_patronale_FS');
+			if (p.get('prev_salariale_total'))  document.getElementById('prev_salariale_total').value = p.get('prev_salariale_total');
+
+			// Lancer le calcul automatiquement si au moins une valeur est passée
+			if (window.location.search.length > 1) {
+				calculer();
+			}
+		});
+    </script>
+</body>
+</html>
