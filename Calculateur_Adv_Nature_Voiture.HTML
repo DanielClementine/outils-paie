@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur d'Avantage en Nature Véhicule</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #0d47a1;
+            --secondary: #34a853;
+            --warning: #fbbc05;
+            --danger: #ea4335;
+            --dark: #202124;
+            --gray: #5f6368;
+            --light-gray: #dadce0;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-hover: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--light-gray);
+            padding-bottom: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-dark);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin: 25px 0 15px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            margin: 20px 0 10px;
+        }
+
+        .intro {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .intro p {
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #2d8e47;
+        }
+
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .alert-warning {
+            background-color: #fff3e0;
+            color: #b36a00;
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-info {
+            background-color: #e3f2fd;
+            color: #0277bd;
+            border-left: 4px solid var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--light-gray);
+            margin-bottom: 20px;
+        }
+
+        .form-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .form-tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .form-content {
+            display: none;
+        }
+
+        .form-content.active {
+            display: block;
+        }
+
+        .checkbox-group {
+            margin: 10px 0;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
+	.checkbox-container input[type="radio"] {
+            margin-right: 10px;
+    	    width: 18px;
+    	    height: 18px;
+	}
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+
+        .form-col {
+            flex: 1 1 280px;
+            padding: 0 10px;
+            margin-bottom: 15px;
+        }
+
+        .results {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-align: right;
+            min-width: 150px;
+        }
+
+        .summary-section {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+
+        .tooltip i {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: var(--dark);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-col {
+                flex: 1 1 100%;
+            }
+            
+            .result-item {
+                flex-direction: column;
+            }
+            
+            .result-value {
+                margin-top: 5px;
+            }
+        }
+
+        /* UI Path friendly elements */
+        [data-uipath] {
+            outline: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            border-top: 1px solid var(--light-gray);
+        }
+
+.section-title {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: var(--primary-dark);
+    margin: 20px 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.intro a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dotted var(--primary);
+}
+
+.intro a:hover {
+    color: var(--primary-dark);
+    border-bottom: 1px solid var(--primary-dark);
+}
+
+.highlighted-red {
+    background-color: rgba(255, 0, 0, 0.15); /* Rouge transparent pour rester lisible */
+    border-left: 4px solid #e53935; /* Bordure rouge à gauche */
+}
+
+.highlighted-gray {
+    background-color: rgba(158, 158, 158, 0.15); /* Gris transparent */
+    border-left: 4px solid #757575; /* Bordure grise à gauche */
+}
+
+/* Pour s'assurer que le texte reste lisible */
+.highlighted-red .result-label,
+.highlighted-red .result-value,
+.highlighted-gray .result-label,
+.highlighted-gray .result-value {
+    color: inherit; /* Garde la couleur du texte inchangée */
+}
+
+.highlighted-blue {
+    background-color: rgba(26, 115, 232, 0.15); /* Bleu transparent */
+    border-left: 4px solid #1a73e8; /* Bordure bleue à gauche */
+}
+
+.highlighted-blue .result-label,
+.highlighted-blue .result-value {
+    color: #1a73e8; /* Texte en bleu */
+    font-weight: 700;
+}
+
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculateur d'Avantage en Nature Véhicule</h1>
+            <p>Suite à l'Arrêté du 25 février 2025</p>
+        </header>
+
+        <div class="intro">
+            <p>Cet outil vous permet de calculer l'avantage en nature lié à la mise à disposition d'un véhicule par un employeur à son salarié, en comparant les dispositions <strong>avant</strong> et <strong>après</strong> <a href="https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051254024" target="_blank">l'arrêté du 25 février 2025</a>.</p>
+            <p>Complétez les paramètres ci-dessous pour obtenir une évaluation précise de l'impact de la nouvelle réglementation.</p>
+        </div>
+
+        <div class="card">
+            <h2>Paramètres du calcul</h2>
+            
+            <div class="form-tabs">
+                <div class="form-tab active" data-tab="vehicule-achete">Véhicule acheté</div>
+                <div class="form-tab" data-tab="vehicule-loue">Véhicule loué</div>
+            </div>
+            
+            <form id="avantage-nature-form">
+                <div class="form-content active" id="vehicule-achete-content">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="cout-achat">Coût d'achat du véhicule TTC</label>
+                                <input type="number" id="cout-achat" data-uipath="cout-achat" min="0" step="100" placeholder="Ex: 30000">
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="age-vehicule">Âge du véhicule (1ère mise en circulation)</label>
+                                <select id="age-vehicule" data-uipath="age-vehicule">
+                                    <option value="moins-5-ans">5 ans ou moins</option>
+                                    <option value="plus-5-ans">Plus de 5 ans</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="type-motorisation">Type de motorisation</label>
+                                <select id="type-motorisation" data-uipath="type-motorisation">
+                                    <option value="thermique">Thermique (Essence/Diesel)</option>
+                                    <option value="electrique">Électrique</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-col vehicule-electrique hidden">
+                            <div class="form-group">
+                                <label for="score-environnemental">Score environnemental conforme</label>
+                                <select id="score-environnemental" data-uipath="score-environnemental">
+                                    <option value="oui">Oui</option>
+                                    <option value="non">Non</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="section-title">Méthode d'évaluation</label>
+                        <div class="checkbox-container">
+                            <input type="radio" id="eval-forfaitaire" name="methode-evaluation" value="forfaitaire" checked data-uipath="eval-forfaitaire">
+                            <label for="eval-forfaitaire"> Évaluation forfaitaire</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="radio" id="eval-reelle" name="methode-evaluation" value="reelle" data-uipath="eval-reelle">
+                            <label for="eval-reelle">  Évaluation sur la base des dépenses réelles</label>
+                        </div>
+                    </div>
+
+                    <div id="evaluation-reelle-fields" class="hidden">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="assurance-annuelle">Assurance annuelle TTC</label>
+                                    <input type="number" id="assurance-annuelle" data-uipath="assurance-annuelle" min="0" step="10" placeholder="Ex: 800">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="frais-entretien">Frais d'entretien annuels TTC</label>
+                                    <input type="number" id="frais-entretien" data-uipath="frais-entretien" min="0" step="10" placeholder="Ex: 500">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="km-annuel-total">Kilométrage annuel total</label>
+                                    <input type="number" id="km-annuel-total" data-uipath="km-annuel-total" min="0" step="100" placeholder="Ex: 20000">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="km-annuel-prive">Kilométrage annuel privé</label>
+                                    <input type="number" id="km-annuel-prive" data-uipath="km-annuel-prive" min="0" step="100" placeholder="Ex: 5000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<div class="form-group" id="section-carburant">
+    <label class="section-title">Carburant privé pris en charge par l'employeur</label>
+                        <div class="checkbox-container">
+                            <input type="radio" id="carburant-non" name="carburant" value="non" checked data-uipath="carburant-non">
+                            <label for="carburant-non"> Non</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="radio" id="carburant-oui-frais-reels" name="carburant" value="oui-frais-reels" data-uipath="carburant-oui-frais-reels">
+                            <label for="carburant-oui-frais-reels"> Oui, évalué en frais réels</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="radio" id="carburant-oui-forfait" name="carburant" value="oui-forfait" data-uipath="carburant-oui-forfait">
+                            <label for="carburant-oui-forfait"> Oui, évalué forfaitairement</label>
+                        </div>
+                    </div>
+
+                    <div id="frais-carburant-container" class="hidden">
+                        <div class="form-group">
+                            <label for="frais-carburant">Frais annuels de carburant pour usage privé TTC</label>
+                            <input type="number" id="frais-carburant" data-uipath="frais-carburant" min="0" step="10" placeholder="Ex: 1200">
+                        </div>
+                    </div>
+                </div>
+                
+<div class="form-content" id="vehicule-loue-content">
+    <div class="form-row">
+        <div class="form-col">
+            <div class="form-group">
+                <label for="cout-location-annuel">Coût global annuel de location TTC (incl. entretien et assurance)</label>
+                <input type="number" id="cout-location-annuel" data-uipath="cout-location-annuel" min="0" step="100" placeholder="Ex: 8000">
+            </div>
+        </div>
+        <div class="form-col">
+            <div class="form-group">
+                <label for="age-vehicule-loue">Âge du véhicule (1ère mise en circulation)</label>
+                <select id="age-vehicule-loue" data-uipath="age-vehicule-loue">
+                    <option value="moins-5-ans">5 ans ou moins</option>
+                    <option value="plus-5-ans">Plus de 5 ans</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+<div class="form-row">
+    <div class="form-col">
+        <div class="form-group">
+            <label for="prix-achat-vehicule">Prix d'achat TTC du véhicule par le loueur (rabais 30% max.)</label>
+            <input type="number" id="prix-achat-vehicule" data-uipath="prix-achat-vehicule" min="0" step="100" placeholder="Ex: 30000">
+        </div>
+    </div>
+    <div class="form-col">
+        <div class="form-group">
+            <label for="type-motorisation-loue">Type de motorisation</label>
+            <select id="type-motorisation-loue" data-uipath="type-motorisation-loue">
+                <option value="thermique">Thermique (Essence/Diesel)</option>
+                <option value="electrique">Électrique</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Nouvelle row pour le champ vehicule-electrique-loue -->
+<div class="form-row">
+    <div class="form-col vehicule-electrique-loue hidden">
+        <div class="form-group">
+            <label for="score-environnemental-loue">Score environnemental conforme</label>
+            <select id="score-environnemental-loue" data-uipath="score-environnemental-loue">
+                <option value="oui">Oui</option>
+                <option value="non">Non</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+                    <div class="form-group">
+                        <label class="section-title">Méthode d'évaluation</label>
+                        <div class="checkbox-container">
+                            <input type="radio" id="eval-forfaitaire-loue" name="methode-evaluation-loue" value="forfaitaire" checked data-uipath="eval-forfaitaire-loue">
+                            <label for="eval-forfaitaire-loue">Évaluation forfaitaire</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="radio" id="eval-reelle-loue" name="methode-evaluation-loue" value="reelle" data-uipath="eval-reelle-loue">
+                            <label for="eval-reelle-loue">Évaluation sur la base des dépenses réelles</label>
+                        </div>
+                    </div>
+
+                    <div id="evaluation-reelle-fields-loue" class="hidden">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="km-annuel-total-loue">Kilométrage annuel total</label>
+                                    <input type="number" id="km-annuel-total-loue" data-uipath="km-annuel-total-loue" min="0" step="100" placeholder="Ex: 20000">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="km-annuel-prive-loue">Kilométrage annuel privé</label>
+                                    <input type="number" id="km-annuel-prive-loue" data-uipath="km-annuel-prive-loue" min="0" step="100" placeholder="Ex: 5000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<div class="form-group" id="section-carburant-loue">
+    <label class="section-title">Carburant privé pris en charge par l'employeur</label>
+                        <div class="checkbox-container">
+                            <input type="radio" id="carburant-non-loue" name="carburant-loue" value="non" checked data-uipath="carburant-non-loue">
+                            <label for="carburant-non-loue"> Non</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="radio" id="carburant-oui-frais-reels-loue" name="carburant-loue" value="oui-frais-reels" data-uipath="carburant-oui-frais-reels-loue">
+                            <label for="carburant-oui-frais-reels-loue"> Oui, évalué en frais réels</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="radio" id="carburant-oui-forfait-loue" name="carburant-loue" value="oui-forfait" data-uipath="carburant-oui-forfait-loue">
+                            <label for="carburant-oui-forfait-loue"> Oui, évalué forfaitairement</label>
+                        </div>
+                    </div>
+
+                    <div id="frais-carburant-container-loue" class="hidden">
+                        <div class="form-group">
+                            <label for="frais-carburant-loue">Frais annuels de carburant pour usage privé TTC</label>
+                            <input type="number" id="frais-carburant-loue" data-uipath="frais-carburant-loue" min="0" step="10" placeholder="Ex: 1200">
+                        </div>
+                    </div>
+
+<!-- Nouveau conteneur pour les frais de carburant forfaitaires -->
+<div id="frais-carburant-forfait-container-loue" class="hidden">
+    <div class="form-group">
+        <label for="frais-carburant-forfait-loue">Frais annuels de carburant (total professionnel + privé) TTC</label>
+        <input type="number" id="frais-carburant-forfait-loue" data-uipath="frais-carburant-forfait-loue" min="0" step="10" placeholder="Ex: 4800">
+    </div>
+</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taux-charges">Taux moyen de charges sociales employeur (%)</label>
+                    <input type="number" id="taux-charges" data-uipath="taux-charges" min="0" max="100" step="0.1" placeholder="Ex: 45">
+                </div>
+
+                <div class="form-row">
+    <div class="form-col">
+        <button type="button" id="calculer-btn" class="btn btn-block" data-uipath="calculer-btn">Calculer</button>
+    </div>
+    <div class="form-col">
+        <button type="button" id="reinitialiser-btn" class="btn btn-block btn-secondary" data-uipath="reinitialiser-btn">Réinitialiser</button>
+    </div>
+</div>
+            </form>
+        </div>
+
+        <div id="results-section" class="results hidden">
+            <h2>Résultats du calcul</h2>
+            
+            <div class="result-item highlighted-blue" data-uipath="ancien-2025-avantage-annuel">
+                <div class="result-label">Avantage en nature annuel pour véhicule mis à disposition avant 1er Fév. 2025 (ancienne législation)..............(A)</div>
+                <div class="result-value" id="ancien-2025-avantage-annuel">€</div>
+            </div>
+            
+            <div class="result-item highlighted-blue" data-uipath="ancien-2025-avantage-mensuel">
+                <div class="result-label">Avantage en nature annuel pour véhicule mis à disposition avant 1er Fév. 2025 (ancienne législation)</div>
+                <div class="result-value" id="ancien-2025-avantage-mensuel">€</div>
+            </div>
+            
+            <div class="result-item highlighted-red" data-uipath="nouveau-avantage-annuel">
+                <div class="result-label">Avantage en nature annuel pour véhicule mis à dispositon à partr du 1er Fév. 2025 (nouvelle législation) ..............(B)</div>
+                <div class="result-value" id="nouveau-avantage-annuel">€</div>
+            </div>
+            
+            <div class="result-item highlighted-red" data-uipath="nouveau-avantage-mensuel">
+                <div class="result-label">Avantage en nature annuel pour véhicule mis à dispositon à partr du 1er Fév. 2025 (nouvelle législation)</div>
+                <div class="result-value" id="nouveau-avantage-mensuel">€</div>
+            </div>
+
+<div class="result-item highlighted-gray" data-uipath="surcout-brut-annuel">
+    <div class="result-label">Surcoût brut annuel : nouvelle législation v/s ancienne législation = (C) = (B) - (A)</div>
+    <div class="result-value" id="surcout-brut-annuel">€</div>
+</div>
+
+<div class="result-item highlighted-gray" data-uipath="surcout-brut-charge">
+    <div class="result-label">Surcoût brut annuel chargé : (C) * Taux moyen de charges sociales employeur</div>
+    <div class="result-value" id="surcout-brut-charge">€</div>
+</div>
+            
+            <div class="summary-section">
+                <h3>Synthèse</h3>
+                <p id="summary-text">Pour un véhicule de fonction évalué selon les paramètres indiqués, l'impact de la nouvelle législation, <strong>entrée en vigueur à compter du 1er février 2025</strong>, entraîne un surcoût annuel (12 mois) chargé de <strong id="summary-surcout">€</strong>.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Calculateur d'Avantage en Nature Véhicule - Basé sur l'Arrêté du 25 février 2025 - made with 💖 by Daniel Clémentine</p>
+    </footer>
+
+    <div class="notification" id="notification">Calcul effectué avec succès</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabs = document.querySelectorAll('.form-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.form-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to current tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(`${this.dataset.tab}-content`).classList.add('active');
+                });
+            });
+
+            // Evaluation method change
+            document.getElementById('eval-forfaitaire').addEventListener('change', function() {
+                document.getElementById('evaluation-reelle-fields').classList.add('hidden');
+            });
+            document.getElementById('eval-reelle').addEventListener('change', function() {
+                document.getElementById('evaluation-reelle-fields').classList.remove('hidden');
+            });
+document.getElementById('eval-forfaitaire-loue').addEventListener('change', function() {
+    document.getElementById('evaluation-reelle-fields-loue').classList.add('hidden');
+    // Si l'option carburant forfaitaire est sélectionnée, on masque aussi le champ de saisie des frais
+    if (document.getElementById('carburant-oui-forfait-loue').checked) {
+        document.getElementById('frais-carburant-forfait-container-loue').classList.add('hidden');
+    }
+});
+document.getElementById('eval-reelle-loue').addEventListener('change', function() {
+    document.getElementById('evaluation-reelle-fields-loue').classList.remove('hidden');
+    // Si l'option carburant forfaitaire est sélectionnée, on affiche le champ de saisie des frais
+    if (document.getElementById('carburant-oui-forfait-loue').checked) {
+        document.getElementById('frais-carburant-forfait-container-loue').classList.remove('hidden');
+    }
+});
+
+            // Carburant change
+            const carburantOptions = document.querySelectorAll('input[name="carburant"]');
+            carburantOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    if (this.value === 'oui-frais-reels') {
+                        document.getElementById('frais-carburant-container').classList.remove('hidden');
+                    } else {
+                        document.getElementById('frais-carburant-container').classList.add('hidden');
+                    }
+                });
+            });
+
+const carburantOptionsLoue = document.querySelectorAll('input[name="carburant-loue"]');
+carburantOptionsLoue.forEach(option => {
+    option.addEventListener('change', function() {
+        if (this.value === 'oui-frais-reels') {
+            document.getElementById('frais-carburant-container-loue').classList.remove('hidden');
+            document.getElementById('frais-carburant-forfait-container-loue').classList.add('hidden');
+        } else if (this.value === 'oui-forfait') {
+            document.getElementById('frais-carburant-container-loue').classList.add('hidden');
+            // On n'affiche le champ de saisie des frais forfaitaires que si l'évaluation n'est pas forfaitaire
+            if (!document.getElementById('eval-forfaitaire-loue').checked) {
+                document.getElementById('frais-carburant-forfait-container-loue').classList.remove('hidden');
+            } else {
+                document.getElementById('frais-carburant-forfait-container-loue').classList.add('hidden');
+            }
+        } else {
+            document.getElementById('frais-carburant-container-loue').classList.add('hidden');
+            document.getElementById('frais-carburant-forfait-container-loue').classList.add('hidden');
+        }
+    });
+});
+            // Show/hide electric vehicle specific fields
+document.getElementById('type-motorisation').addEventListener('change', function() {
+    if (this.value === 'electrique') {
+        document.querySelector('.vehicule-electrique').classList.remove('hidden');
+        document.getElementById('section-carburant').classList.add('hidden');
+        document.getElementById('frais-carburant-container').classList.add('hidden');
+    } else {
+        document.querySelector('.vehicule-electrique').classList.add('hidden');
+        document.getElementById('section-carburant').classList.remove('hidden');
+    }
+});
+
+document.getElementById('type-motorisation-loue').addEventListener('change', function() {
+    if (this.value === 'electrique') {
+        document.querySelector('.vehicule-electrique-loue').classList.remove('hidden');
+        document.getElementById('section-carburant-loue').classList.add('hidden');
+        document.getElementById('frais-carburant-container-loue').classList.add('hidden');
+        document.getElementById('frais-carburant-forfait-container-loue').classList.add('hidden');
+    } else {
+        document.querySelector('.vehicule-electrique-loue').classList.add('hidden');
+        document.getElementById('section-carburant-loue').classList.remove('hidden');
+    }
+});
+
+            // Calculate button
+            document.getElementById('calculer-btn').addEventListener('click', calculateAvantageNature);
+	    // Bouton de réinitialisation
+document.getElementById('reinitialiser-btn').addEventListener('click', function() {
+    // Réinitialiser tous les champs de formulaire
+    document.getElementById('avantage-nature-form').reset();
+    
+    // Masquer les champs conditionnels
+    document.getElementById('evaluation-reelle-fields').classList.add('hidden');
+    document.getElementById('evaluation-reelle-fields-loue').classList.add('hidden');
+    document.getElementById('frais-carburant-container').classList.add('hidden');
+    document.getElementById('frais-carburant-container-loue').classList.add('hidden');
+    document.getElementById('frais-carburant-forfait-container-loue').classList.add('hidden');
+    document.querySelector('.vehicule-electrique').classList.add('hidden');
+    document.querySelector('.vehicule-electrique-loue').classList.add('hidden');
+document.getElementById('section-carburant').classList.remove('hidden');
+document.getElementById('section-carburant-loue').classList.remove('hidden');
+    
+    // Cacher la section des résultats
+    document.getElementById('results-section').classList.add('hidden');
+    
+    // Afficher une notification
+    const notification = document.getElementById('notification');
+    // Sauvegarder le texte original
+    const originalText = notification.textContent;
+    // Changer pour le message de réinitialisation
+    notification.textContent = "Formulaire réinitialisé";
+    notification.classList.add('show');
+    setTimeout(() => {
+        notification.classList.remove('show');
+        // Restaurer le texte original après la disparition
+        setTimeout(() => {
+            notification.textContent = originalText;
+        }, 300);
+    }, 3000);
+});
+
+
+
+
+function calculateAvantageNature() {
+    const isVehiculeAchete = document.querySelector('.form-tab.active').dataset.tab === 'vehicule-achete';
+    
+    // Common variables
+    let tauxCharges = document.getElementById('taux-charges').value.trim() !== '' ? 
+              parseFloat(document.getElementById('taux-charges').value) : null;
+    
+    let avantageAncien2024, avantageAncien2025, avantageNouveau;
+	
+	
+//================DEBUT VEHICULE ACHETE=================DEBUT VEHICULE ACHETE======================DEBUT VEHICULE ACHETE==============================
+    
+    if (isVehiculeAchete) {
+        // Véhicule acheté
+        const coutAchat = parseFloat(document.getElementById('cout-achat').value) || 0;
+        const ageVehicule = document.getElementById('age-vehicule').value;
+        const isElectrique = document.getElementById('type-motorisation').value === 'electrique';
+        const scoreEnvironnemental = document.getElementById('score-environnemental').value === 'oui';
+        const isEvaluationForfaitaire = document.getElementById('eval-forfaitaire').checked;
+        const carburantOption = document.querySelector('input[name="carburant"]:checked').value;
+        
+        if (isEvaluationForfaitaire) {
+            // Évaluation forfaitaire
+            const isVehicule5AnsOuMoins = ageVehicule === 'moins-5-ans';
+            
+            // Ancienne législation (2024 et janvier 2025)
+            let tauxAncien;
+            if (isVehicule5AnsOuMoins) {
+                if (carburantOption === 'non') {
+                    tauxAncien = 0.09; // 9%
+                } else if (carburantOption === 'oui-frais-reels') {
+                    tauxAncien = 0.09; // 9% + frais réels (ajoutés plus tard)
+                } else { // oui-forfait
+                    tauxAncien = 0.12; // 12%
+                }
+            } else { // Plus de 5 ans
+                if (carburantOption === 'non') {
+                    tauxAncien = 0.06; // 6%
+                } else if (carburantOption === 'oui-frais-reels') {
+                    tauxAncien = 0.06; // 6% + frais réels (ajoutés plus tard)
+                } else { // oui-forfait
+                    tauxAncien = 0.09; // 9%
+                }
+            }
+            
+            // Nouvelle législation (à partir de février 2025)
+            let tauxNouveau;
+            if (isVehicule5AnsOuMoins) {
+                if (carburantOption === 'non') {
+                    tauxNouveau = 0.15; // 15%
+                } else if (carburantOption === 'oui-frais-reels') {
+                    tauxNouveau = 0.15; // 15% + frais réels (ajoutés plus tard)
+                } else { // oui-forfait
+                    tauxNouveau = 0.20; // 20%
+                }
+            } else { // Plus de 5 ans
+                if (carburantOption === 'non') {
+                    tauxNouveau = 0.10; // 10%
+                } else if (carburantOption === 'oui-frais-reels') {
+                    tauxNouveau = 0.10; // 10% + frais réels (ajoutés plus tard)
+                } else { // oui-forfait
+                    tauxNouveau = 0.15; // 15%
+                }
+            }
+            
+            // Calcul des avantages en nature
+            avantageAncien2024 = coutAchat * tauxAncien;
+            avantageAncien2025 = avantageAncien2024; // Même valeur pour janvier 2025
+            avantageNouveau = coutAchat * tauxNouveau;
+            
+            // Ajout des frais réels de carburant si applicable
+            if (carburantOption === 'oui-frais-reels') {
+                const fraisCarburant = parseFloat(document.getElementById('frais-carburant').value) || 0;
+                avantageAncien2024 += fraisCarburant;
+                avantageAncien2025 += fraisCarburant;
+                avantageNouveau += fraisCarburant;
+            }
+            
+            // Appliquer les abattements pour véhicules électriques
+            if (isElectrique) {
+                // Ancienne législation: abattement de 50% dans la limite de 2026,30 € par an en 2026 / 1800 en 2024
+                const abattementAncien2024 = Math.min(avantageAncien2024 * 0.5, 1800);
+                const abattementAncien2025 = Math.min(avantageAncien2025 * 0.5, 2026.30);
+                avantageAncien2024 -= abattementAncien2024;
+                avantageAncien2025 -= abattementAncien2025;
+                
+                // Nouvelle législation: abattement de 70% dans la limite de 4641.60 € par an/2026
+                // seulement si le score environnemental est conforme
+	if (scoreEnvironnemental) {
+		let abattementNouveau;
+		if (isEvaluationForfaitaire) {
+			abattementNouveau = Math.min(avantageNouveau * 0.7, 4641.60);
+		} else {
+        abattementNouveau = Math.min(avantageNouveau * 0.5, 2026.30);
+		}
+		avantageNouveau -= abattementNouveau;
+	}
+            }
+        } else {
+            // Évaluation réelle
+            const assuranceAnnuelle = parseFloat(document.getElementById('assurance-annuelle').value) || 0;
+            const fraisEntretien = parseFloat(document.getElementById('frais-entretien').value) || 0;
+            const kmAnnuelTotal = parseFloat(document.getElementById('km-annuel-total').value) || 1; // Éviter division par zéro
+            const kmAnnuelPrive = parseFloat(document.getElementById('km-annuel-prive').value) || 0;
+            const ratioKmPrive = kmAnnuelPrive / kmAnnuelTotal;
+            
+            // Amortissement selon l'âge
+            const tauxAmortissement = ageVehicule === 'moins-5-ans' ? 0.2 : 0.1; // 20% ou 10%
+            const amortissementAnnuel = coutAchat * tauxAmortissement;
+            
+            // Calcul de l'avantage en nature avant prise en compte du carburant
+            const avantageBaseAncien = (amortissementAnnuel + assuranceAnnuelle + fraisEntretien) * ratioKmPrive;
+            avantageAncien2024 = avantageBaseAncien;
+            avantageAncien2025 = avantageBaseAncien;
+            avantageNouveau = avantageBaseAncien; // Identique pour la nouvelle législation
+            
+            // Ajout des frais de carburant si applicable
+            if (carburantOption === 'oui-frais-reels') {
+                const fraisCarburant = parseFloat(document.getElementById('frais-carburant').value) || 0;
+                avantageAncien2024 += fraisCarburant;
+                avantageAncien2025 += fraisCarburant;
+                avantageNouveau += fraisCarburant;
+            }
+            
+            // Appliquer les abattements pour véhicules électriques
+            if (isElectrique) {
+                // Ancienne législation: abattement de 50% dans la limite de 2026,30 € par an en 2026 / 1800 en 2024
+                const abattementAncien2024 = Math.min(avantageAncien2024 * 0.5, 1800);
+                const abattementAncien2025 = Math.min(avantageAncien2025 * 0.5, 2026.30);
+                avantageAncien2024 -= abattementAncien2024;
+                avantageAncien2025 -= abattementAncien2025;
+                
+                // Nouvelle législation: abattement de 70% dans la limite de 4641.60 € par an/2026
+                // seulement si le score environnemental est conforme
+if (scoreEnvironnemental) {
+    let abattementNouveau;
+    if (isEvaluationForfaitaire) {
+        abattementNouveau = Math.min(avantageNouveau * 0.7, 4641.60);
+    } else {
+        abattementNouveau = Math.min(avantageNouveau * 0.5, 2026.30);
+    }
+    avantageNouveau -= abattementNouveau;
+}
+            }
+        }
+    } else {
+	
+//================FIN VEHICULE ACHETE=================FIN VEHICULE ACHETE======================FIN VEHICULE ACHETE==============================
+	
+	
+//================DEBUT VEHICULE LOUE=================DEBUT VEHICULE LOUE======================DEBUT VEHICULE LOUE==============================
+
+	
+        // Véhicule loué
+        const coutLocationAnnuel = parseFloat(document.getElementById('cout-location-annuel').value) || 0;
+        const prixAchatVehicule = parseFloat(document.getElementById('prix-achat-vehicule').value) || 0;
+        const isElectrique = document.getElementById('type-motorisation-loue').value === 'electrique';
+        const scoreEnvironnemental = document.getElementById('score-environnemental-loue').value === 'oui';
+        const isEvaluationForfaitaire = document.getElementById('eval-forfaitaire-loue').checked;
+        const carburantOption = document.querySelector('input[name="carburant-loue"]:checked').value;
+        
+        if (isEvaluationForfaitaire) {
+            // Évaluation forfaitaire
+            
+            // Ancienne législation (2024 et janvier 2025)
+            let tauxAncien;
+            if (carburantOption === 'non') {
+                tauxAncien = 0.3; // 30%
+            } else if (carburantOption === 'oui-frais-reels') {
+                tauxAncien = 0.3; // 30% + frais réels (ajoutés plus tard)
+            } else { // oui-forfait
+                tauxAncien = 0.4; // 40%
+            }
+            
+            // Nouvelle législation (à partir de février 2025)
+            let tauxNouveau;
+            if (carburantOption === 'non') {
+                tauxNouveau = 0.5; // 50%
+            } else if (carburantOption === 'oui-frais-reels') {
+                tauxNouveau = 0.5; // 50% + frais réels (ajoutés plus tard)
+            } else { // oui-forfait
+                tauxNouveau = 0.67; // 67%
+            }
+            
+            // Calcul des avantages en nature
+            if (carburantOption === 'oui-forfait') {
+                // Pour l'option forfaitaire, inclure les frais de carburant dans le coût global
+                const fraisCarburantForfait = parseFloat(document.getElementById('frais-carburant-forfait-loue').value) || 0;
+                const coutGlobalAvecCarburant = coutLocationAnnuel + fraisCarburantForfait;
+                
+                avantageAncien2024 = coutGlobalAvecCarburant * tauxAncien;
+                avantageAncien2025 = avantageAncien2024; // Même valeur pour janvier 2025
+                avantageNouveau = coutGlobalAvecCarburant * tauxNouveau;
+            } else {
+                // Pour les autres options (sans carburant ou frais réels)
+                avantageAncien2024 = coutLocationAnnuel * tauxAncien;
+                avantageAncien2025 = avantageAncien2024; // Même valeur pour janvier 2025
+                avantageNouveau = coutLocationAnnuel * tauxNouveau;
+            }
+            
+            // Ajout des frais réels de carburant si applicable
+            if (carburantOption === 'oui-frais-reels') {
+                const fraisCarburant = parseFloat(document.getElementById('frais-carburant-loue').value) || 0;
+                avantageAncien2024 += fraisCarburant;
+                avantageAncien2025 += fraisCarburant;
+                avantageNouveau += fraisCarburant;
+            }
+            
+            // Récupérer l'âge du véhicule loué
+            const ageVehiculeLoue = document.getElementById('age-vehicule-loue') ? 
+                                    document.getElementById('age-vehicule-loue').value : 'moins-5-ans';
+            const isVehicule5AnsOuMoins = ageVehiculeLoue === 'moins-5-ans';
+            
+            // Déterminer les taux applicables pour un véhicule acheté selon l'âge et l'option carburant
+            let tauxPlafondAncien, tauxPlafondNouveau;
+            
+            if (carburantOption === 'non') {
+                // Sans carburant
+                if (isVehicule5AnsOuMoins) {
+                    tauxPlafondAncien = 0.09; // 9% pour véhicule ≤ 5 ans (ancienne législation)
+                    tauxPlafondNouveau = 0.15; // 15% pour véhicule ≤ 5 ans (nouvelle législation)
+                } else {
+                    tauxPlafondAncien = 0.06; // 6% pour véhicule > 5 ans (ancienne législation)
+                    tauxPlafondNouveau = 0.10; // 10% pour véhicule > 5 ans (nouvelle législation)
+                }
+            } else if (carburantOption === 'oui-frais-reels') {
+                // Avec carburant en frais réels
+                if (isVehicule5AnsOuMoins) {
+                    tauxPlafondAncien = 0.09; // 9% pour véhicule ≤ 5 ans (ancienne législation)
+                    tauxPlafondNouveau = 0.15; // 15% pour véhicule ≤ 5 ans (nouvelle législation)
+                } else {
+                    tauxPlafondAncien = 0.06; // 6% pour véhicule > 5 ans (ancienne législation)
+                    tauxPlafondNouveau = 0.10; // 10% pour véhicule > 5 ans (nouvelle législation)
+                }
+                // Les frais réels de carburant seront ajoutés séparément
+            } else { // carburantOption === 'oui-forfait'
+                // Avec carburant en forfait (gestion globale)
+                if (isVehicule5AnsOuMoins) {
+                    tauxPlafondAncien = 0.12; // 12% pour véhicule ≤ 5 ans (ancienne législation)
+                    tauxPlafondNouveau = 0.20; // 20% pour véhicule ≤ 5 ans (nouvelle législation)
+                } else {
+                    tauxPlafondAncien = 0.09; // 9% pour véhicule > 5 ans (ancienne législation)
+                    tauxPlafondNouveau = 0.15; // 15% pour véhicule > 5 ans (nouvelle législation)
+                }
+            }
+            
+            // Application conditionnelle des plafonnements selon le type de carburant
+			if (carburantOption === 'oui-forfait') {
+                // Calcul des plafonds pour le forfait
+                const plafondAncien = prixAchatVehicule * tauxPlafondAncien;
+                const plafondNouveau = prixAchatVehicule * tauxPlafondNouveau;
+                
+                // Application des plafonds pour tous les véhicules (y compris électriques)
+                avantageAncien2024 = Math.min(avantageAncien2024, plafondAncien);
+                avantageAncien2025 = Math.min(avantageAncien2025, plafondAncien);
+                avantageNouveau = Math.min(avantageNouveau, plafondNouveau);
+            } else if (carburantOption === 'oui-frais-reels') {
+                // Calcul des plafonds pour les frais réels
+                const plafondAncien = prixAchatVehicule * tauxPlafondAncien;
+                const plafondNouveau = prixAchatVehicule * tauxPlafondNouveau;
+                
+                const fraisCarburant = parseFloat(document.getElementById('frais-carburant-loue').value) || 0;
+                const plafondAncienAvecCarburant = plafondAncien + fraisCarburant;
+                const plafondNouveauAvecCarburant = plafondNouveau + fraisCarburant;
+                
+                // Application des plafonds pour tous les véhicules (y compris électriques)
+                avantageAncien2024 = Math.min(avantageAncien2024, plafondAncienAvecCarburant);
+                avantageAncien2025 = Math.min(avantageAncien2025, plafondAncienAvecCarburant);
+                avantageNouveau = Math.min(avantageNouveau, plafondNouveauAvecCarburant);
+            } else {
+                // Sans carburant
+                const plafondAncien = prixAchatVehicule * tauxPlafondAncien;
+                const plafondNouveau = prixAchatVehicule * tauxPlafondNouveau;
+                
+                // Application des plafonds pour tous les véhicules (y compris électriques)
+                avantageAncien2024 = Math.min(avantageAncien2024, plafondAncien);
+                avantageAncien2025 = Math.min(avantageAncien2025, plafondAncien);
+                avantageNouveau = Math.min(avantageNouveau, plafondNouveau);
+            }
+            
+            // Appliquer les abattements pour véhicules électriques
+            if (isElectrique) {
+                // Ancienne législation: abattement de 50% dans la limite de 2026,30 € par an en 2026 / 1800 en 2024
+                const abattementAncien2024 = Math.min(avantageAncien2024 * 0.5, 1800);
+                const abattementAncien2025 = Math.min(avantageAncien2025 * 0.5, 2026.30);
+                avantageAncien2024 -= abattementAncien2024;
+                avantageAncien2025 -= abattementAncien2025;
+                
+                // Nouvelle législation: abattement de 70% dans la limite de 4641.60 € par an/2026
+                // seulement si le score environnemental est conforme
+if (scoreEnvironnemental) {
+    let abattementNouveau;
+    if (isEvaluationForfaitaire) {
+        abattementNouveau = Math.min(avantageNouveau * 0.7, 4641.60);
+    } else {
+        abattementNouveau = Math.min(avantageNouveau * 0.5, 2026.30);
+    }
+    avantageNouveau -= abattementNouveau;
+}
+            }
+        } else {
+            // Évaluation réelle
+            const kmAnnuelTotal = parseFloat(document.getElementById('km-annuel-total-loue').value) || 1; // Éviter division par zéro
+            const kmAnnuelPrive = parseFloat(document.getElementById('km-annuel-prive-loue').value) || 0;
+            const ratioKmPrive = kmAnnuelPrive / kmAnnuelTotal;
+            
+            // Calcul de l'avantage en nature avant prise en compte du carburant
+            const avantageBaseAncien = coutLocationAnnuel * ratioKmPrive;
+            avantageAncien2024 = avantageBaseAncien;
+            avantageAncien2025 = avantageBaseAncien;
+            avantageNouveau = avantageBaseAncien; // Identique pour la nouvelle législation
+            
+            // Ajout des frais de carburant si applicable
+            if (carburantOption === 'oui-frais-reels') {
+                const fraisCarburant = parseFloat(document.getElementById('frais-carburant-loue').value) || 0;
+                avantageAncien2024 += fraisCarburant;
+                avantageAncien2025 += fraisCarburant;
+                avantageNouveau += fraisCarburant;
+            }
+            
+            // Appliquer les abattements pour véhicules électriques
+            if (isElectrique) {
+                // Ancienne législation: abattement de 50% dans la limite de 2026,30 € par an en 2026 / 1800 en 2024
+                const abattementAncien2024 = Math.min(avantageAncien2024 * 0.5, 1800);
+                const abattementAncien2025 = Math.min(avantageAncien2025 * 0.5, 2026.30);
+                avantageAncien2024 -= abattementAncien2024;
+                avantageAncien2025 -= abattementAncien2025;
+                
+                // Nouvelle législation: abattement de 70% dans la limite de 4641.60 € par an/2026
+                // seulement si le score environnemental est conforme
+if (scoreEnvironnemental) {
+    let abattementNouveau;
+    if (isEvaluationForfaitaire) {
+        abattementNouveau = Math.min(avantageNouveau * 0.7, 4641.60);
+    } else {
+        abattementNouveau = Math.min(avantageNouveau * 0.5, 2026.30);
+    }
+    avantageNouveau -= abattementNouveau;
+}
+            }
+        }
+    }
+
+//================FIN VEHICULE LOUE=================FIN VEHICULE LOUE======================FIN VEHICULE LOUE==============================
+
+
+
+    // Calculer les valeurs dérivées
+
+    const ancienAvantageMensuel2025 = avantageAncien2025 / 12;
+    const nouveauAvantageMensuel = avantageNouveau / 12;
+
+// Nouveaux calculs
+const surcoutBrutAnnuel = avantageNouveau - avantageAncien2025; // (B) - (A)
+let surcoutBrutCharge;
+if (tauxCharges !== null) {
+    surcoutBrutCharge = surcoutBrutAnnuel * (1 + (tauxCharges / 100));
+} else {
+    surcoutBrutCharge = null;
+}
+
+    
+    // Afficher les résultats
+
+    document.getElementById('ancien-2025-avantage-annuel').textContent = formatMontant(avantageAncien2025);
+    document.getElementById('ancien-2025-avantage-mensuel').textContent = formatMontant(ancienAvantageMensuel2025);
+    document.getElementById('nouveau-avantage-annuel').textContent = formatMontant(avantageNouveau);
+    document.getElementById('nouveau-avantage-mensuel').textContent = formatMontant(nouveauAvantageMensuel);
+document.getElementById('surcout-brut-annuel').textContent = formatMontant(surcoutBrutAnnuel);
+document.getElementById('surcout-brut-charge').textContent = surcoutBrutCharge !== null ? formatMontant(surcoutBrutCharge) : "<Non calculé en l'absence de taux>";
+document.getElementById('summary-surcout').textContent = surcoutBrutCharge !== null ? formatMontant(surcoutBrutCharge) : "<Non calculé en l'absence de taux>";
+    
+    // Afficher la section des résultats
+    document.getElementById('results-section').classList.remove('hidden');
+    
+    // Afficher la notification
+    const notification = document.getElementById('notification');
+    notification.classList.add('show');
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+    
+    // Faire défiler vers les résultats
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+}
+            
+            // Utilitaire pour formater les montants
+            function formatMontant(montant) {
+                return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(montant);
+            }
+        });
+    </script>
