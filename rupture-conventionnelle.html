@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════╗
   ║  OUTILS PAIE FRANCE · /RC => rétroplanning          ║
@@ -9,8 +10,6 @@
   ║  Vérification légale : Mai 2026                     ║
   ╚══════════════════════════════════════════════════════╝
 -->
-
-<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -140,6 +139,14 @@
     .footer { color: #6b7280 !important; }
     [contenteditable="true"]:focus { outline: none !important; }
   }
+  .chk { display:flex; gap:8px; align-items:center; font-size:0.8rem; color:var(--text-muted); margin-bottom:10px; cursor:pointer; }
+  .chk input { width:auto; }
+  .erreur { background:#3b0d0d; border:1px solid var(--red); color:#fecaca; border-radius:10px; padding:14px 18px; margin-bottom:24px; font-size:0.9rem; }
+  .lien-ind { display:block; margin-top:24px; background:var(--green-dim); border:1px solid var(--green); color:#d1fae5; border-radius:12px; padding:18px 22px; text-decoration:none; font-weight:600; }
+  .lien-ind:hover { background:#065f46; }
+  .lien-ind small { display:block; font-weight:400; color:#a7f3d0; margin-top:4px; }
+  @media (max-width:600px) { .params-grid, .recap-grid { grid-template-columns:1fr; } .header { flex-direction:column; gap:16px; } .container { padding:24px 16px; } }
+  @media print { .lien-ind, .params-card .btn-calc { display:none; } }
 </style>
 </head>
 <body>
@@ -172,27 +179,31 @@
       </div>
       <div class="field">
         <label>Référence dossier (optionnel)</label>
-        <input type="text" id="refDossier" placeholder="Ex : RC-2026-001 — anonymisé">
+        <input type="text" id="refDossier" placeholder="Ex : RC-2026-001 — anonymisé" maxlength="60">
       </div>
       <div class="field">
-        <button class="btn-calc" onclick="calculer()">Calculer le rétro-planning</button>
+        <label class="chk"><input type="checkbox" id="alsace" onchange="calculer()"> Alsace-Moselle (Vendredi saint et 26 décembre fériés)</label>
+        <button class="btn-calc" onclick="calculer()">Recalculer</button>
       </div>
     </div>
   </div>
 
   <!-- RÉSULTAT -->
+  <div id="erreur" class="erreur" style="display:none"></div>
   <div id="resultat"></div>
+  <div id="lien-indemnite"></div>
 
   <!-- LEGAL -->
   <div class="legal" id="legal-box" style="display:none">
     <h3>Rappels légaux essentiels</h3>
     <ul>
       <li contenteditable="true">Le délai de rétractation est de <strong>15 jours calendaires</strong> à compter du lendemain de la signature. La lettre de rétractation doit être envoyée dans ce délai, peu importe sa date de réception.</li>
-      <li contenteditable="true">Le délai d'instruction DREETS est de <strong>15 jours ouvrables</strong> à compter du lendemain de la réception. Les dimanches et jours fériés légaux chômés ne sont pas comptés. Tout jour férié inclus prolonge le délai d'un jour ouvrable.</li>
+      <li contenteditable="true">Le délai d'instruction DREETS est de <strong>15 jours ouvrables</strong> à compter du lendemain de la réception de la demande (du lundi au samedi, hors jours fériés). Un délai expirant un samedi, un dimanche ou un jour férié est prorogé au premier jour ouvrable suivant (R1231-1).</li>
       <li contenteditable="true">En l'absence de réponse de la DREETS dans le délai d'instruction, l'homologation est réputée acquise à minuit le dernier jour.</li>
       <li contenteditable="true">La rupture du contrat peut intervenir <strong>au plus tôt le lendemain</strong> de la fin du délai d'instruction. Cette date doit figurer dans la convention.</li>
-      <li contenteditable="true">L'assistance du salarié par une personne extérieure à l'entreprise n'est possible que dans les entreprises de moins de 50 salariés.</li>
-      <li contenteditable="true">Toute contestation doit être portée exclusivement devant le Conseil de prud'hommes dans un délai de <strong>12 mois</strong> suivant la rupture.</li>
+      <li contenteditable="true">Lors du ou des entretiens, le salarié peut se faire assister par une personne de son choix appartenant au personnel de l'entreprise ou, en l'absence d'institution représentative du personnel, par un conseiller du salarié (liste préfectorale). L'employeur ne peut se faire assister que si le salarié l'est ; dans les entreprises de moins de 50 salariés, il peut l'être par une personne de son organisation syndicale d'employeurs ou par un autre employeur de la même branche (L1237-12).</li>
+      <li contenteditable="true">Un exemplaire de la convention signée doit être remis au salarié (à défaut, nullité de la convention).</li>
+      <li contenteditable="true">Toute contestation relève du Conseil de prud'hommes, dans un délai de <strong>12 mois à compter de la date d'homologation</strong> de la convention (L1237-14).</li>
       <li contenteditable="true">La demande d'homologation peut être effectuée en ligne sur <strong>www.teleRC.travail.gouv.fr</strong></li>
     </ul>
   </div>
@@ -204,293 +215,320 @@
 </div>
 
 <script>
-// ─── JOURS FÉRIÉS FRANCE MÉTROPOLITAINE ───
-async function getFeries(year) {
-    if (feriesCache[year]) return feriesCache[year];
-    try {
-        const r = await fetch(`https://calendrier.api.gouv.fr/jours-feries/metropole/${year}.json`);
-        const data = await r.json();
-        feriesCache[year] = Object.keys(data);
-        return feriesCache[year];
-    } catch {
-        return [];
-    }
-}
-const feriesCache = {};
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PaieCore — moteur commun (licenciement, RC, rétro-planning)
+   Fonctions pures, sans dépendance réseau.
+   Toutes les dates sont des Date LOCALES à minuit.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var PaieCore = (function () {
 
-function toISO(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const j = String(d.getDate()).padStart(2,'0');
-  return y+'-'+m+'-'+j;
-}
-
-function isFerie(d) {
-  const list = feriesCache[d.getFullYear()] || [];
-  return list.includes(toISO(d));
-}
-
-function isWeekend(d) { return d.getDay()===0 || d.getDay()===6; }
-function isNonOuvrable(d) { return d.getDay()===0 || isFerie(d); } // dimanche + férié légal chômé
-
-function addDays(d, n) {
-  const r = new Date(d);
-  r.setDate(r.getDate()+n);
-  return r;
-}
-
-// Ajoute n jours CALENDAIRES et proroge si weekend/férié
-function addCalendaires(d, n) {
-  let r = addDays(d, n);
-  while (isWeekend(r) || isFerie(r)) r = addDays(r, 1);
-  return r;
-}
-
-// Ajoute n jours OUVRABLES (hors dimanche et jours fériés légaux chômés)
-// = on avance d'un jour, si c'est un dimanche ou férié on ne compte pas
-function addOuvrables(d, n) {
-  let count = 0;
-  let r = new Date(d);
-  while (count < n) {
-    r = addDays(r, 1);
-    if (!isNonOuvrable(r)) count++;
+  /* ── DATES ── */
+  function mk(y, m, d) { return new Date(y, m, d); }
+  function clone(d) { return mk(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function addDays(d, n) { return mk(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+  // Ajoute n mois en bornant au dernier jour du mois (31/01 + 1 mois = 28/02)
+  function addMonths(d, n) {
+    var y = d.getFullYear(), m = d.getMonth() + n;
+    var ty = y + Math.floor(m / 12), tm = ((m % 12) + 12) % 12;
+    return mk(ty, tm, Math.min(d.getDate(), daysInMonth(ty, tm)));
   }
-  // Si la fin tombe un samedi, dimanche ou férié → proroger
-  while (isWeekend(r) || isFerie(r)) r = addDays(r, 1);
-  return r;
-}
+  function cmp(a, b) { return a.getTime() - b.getTime(); }
+  function diffDays(a, b) { return Math.round((clone(b) - clone(a)) / 86400000); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function toISO(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function toFR(d) { return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
+  var JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  function toLong(d) { return JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()] + ' ' + d.getFullYear(); }
 
-// Soustrait n jours OUVRABLES (rétro)
-function subOuvrables(d, n) {
-  let count = 0;
-  let r = new Date(d);
-  while (count < n) {
-    r = addDays(r, -1);
-    if (!isNonOuvrable(r)) count++;
-  }
-  return r;
-}
-
-function jourSemaine(d) {
-  return ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'][d.getDay()];
-}
-
-function formatFR(d) {
-  const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-  const mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-  return jours[d.getDay()]+' '+d.getDate()+' '+mois[d.getMonth()]+' '+d.getFullYear();
-}
-
-function warnTag(d, original) {
-  const prorog = original && (isWeekend(original) || isFerie(original));
-  if (prorog) return '<div class="warn-tag">⚠ '+jourSemaine(original)+' — prorogé au '+jourSemaine(d)+'</div>';
-  return '<div class="ok-tag">✓ '+jourSemaine(d)+'</div>';
-}
-
-function computeForward(dateSign) {
-  // Délai rétractation : lendemain de signature + 15 jours calendaires
-  const debutRetrac = addDays(dateSign, 1);
-  let finRetracBrute = addDays(dateSign, 15); // lendemain = +1, puis 15j = +15 depuis signature = +15 depuis départ
-  // Explication : délai part le lendemain de la signature, donc fin = signature + 15j
-  let finRetrac = new Date(finRetracBrute);
-  while (isWeekend(finRetrac) || isFerie(finRetrac)) finRetrac = addDays(finRetrac, 1);
-
-  // Envoi homologation : lendemain fin rétractation
-  const envoiHomol = addDays(finRetrac, 1);
-
-  // Réception DREETS : même jour que l'envoi (télétransmission, conforme TéléRC officiel)
-  const receptionDir = envoiHomol;
-
-  // Délai instruction : 15 jours OUVRABLES à compter du lendemain de la réception
-  let debutInstruction = addDays(receptionDir, 1);
-  while (isNonOuvrable(debutInstruction)) debutInstruction = addDays(debutInstruction, 1);
-  let finInstructionBrute = addOuvrables(receptionDir, 15); // +15j ouvrables depuis réception
-  let finInstruction = new Date(finInstructionBrute);
-  while (isWeekend(finInstruction) || isFerie(finInstruction)) finInstruction = addDays(finInstruction, 1);
-
-  // Date rupture : lendemain fin instruction
-  const dateRupture = addDays(finInstruction, 1);
-
-  return { dateSign, debutRetrac, finRetracBrute, finRetrac, envoiHomol, receptionDir, debutInstruction, finInstructionBrute, finInstruction, dateRupture };
-}
-
-function unprorogue(d) {
-  let raw = new Date(d);
-  let prev = addDays(raw, -1);
-  while (isWeekend(prev) || isFerie(prev)) { raw = prev; prev = addDays(raw, -1); }
-  return raw;
-}
-
-function computeRetro(dateSortie) {
-  const finInstruction = addDays(dateSortie, -1);
-  const rawFinInstruction = unprorogue(finInstruction);
-  const receptionDir = subOuvrables(rawFinInstruction, 15);
-  const envoiHomol = new Date(receptionDir);
-  const finRetrac = addDays(envoiHomol, -1);
-  const rawFinRetrac = unprorogue(finRetrac);
-  const dateSign = addDays(rawFinRetrac, -15);
-  return computeForward(dateSign);
-}
-
-function onModeChange() {
-  const mode = document.getElementById('mode').value;
-  const label = document.getElementById('date-label');
-  if (mode === 'retro') label.textContent = 'Date de sortie des effectifs souhaitée';
-  else label.textContent = 'Date de signature de la convention';
-  calculer();
-}
-
-async function calculer() {
-  const val = document.getElementById('dateInput').value;
-  if (!val) return;
-  const mode = document.getElementById('mode').value;
-  const inputDate = new Date(val+'T12:00:00');
-  
-  // Charger les fériés pour toutes les années concernées par le calcul
-  const y = inputDate.getFullYear();
-  await Promise.all([y-1, y, y+1, y+2].map(yr => getFeries(yr)));
-  
-  const s = mode === 'retro' ? computeRetro(inputDate) : computeForward(inputDate);
-  render(s, mode);
-}
-
-function render(s, mode) {
-  const steps = [
-    {
-      num: 1, titre: 'Entretien(s) préparatoire(s)', type: 'normal',
-      label: 'Avant le', date: s.dateSign, dateBrute: null,
-      desc: 'Au moins 1 entretien obligatoire. Le salarié peut être assisté par une personne de son choix (personnel de l\'entreprise). L\'employeur peut être assisté uniquement si le salarié l\'est également.'
-    },
-    {
-      num: 2, titre: 'Signature de la convention de rupture', type: 'highlight',
-      label: 'Date de signature', date: s.dateSign, dateBrute: null,
-      desc: 'Les deux parties signent la convention. Cette date déclenche le délai de rétractation de 15 jours calendaires. La date de rupture envisagée doit figurer dans la convention.'
-    },
-    {
-      num: 3, titre: 'Début du délai de rétractation', type: 'normal',
-      label: 'Le lendemain de la signature', date: s.debutRetrac, dateBrute: null,
-      desc: 'Le délai de 15 jours calendaires commence le lendemain de la signature. Chaque partie peut se rétracter par écrit (LRAR, remise en main propre contre décharge, acte d\'huissier).'
-    },
-    {
-      num: 4, titre: 'Fin du délai de rétractation', type: 'highlight',
-      label: 'À minuit le', date: s.finRetrac, dateBrute: s.finRetracBrute,
-      desc: 'Expiration du délai de rétractation de 15 jours calendaires. Si cette date tombe un samedi, dimanche ou jour férié chômé, le délai est prorogé jusqu\'au 1er jour ouvrable suivant.'
-    },
-    {
-      num: 5, titre: 'Envoi de la demande d\'homologation à la DREETS', type: 'normal',
-      label: 'Au plus tôt le', date: s.envoiHomol, dateBrute: null,
-      desc: 'Dès le lendemain de la fin du délai de rétractation, la partie la plus diligente adresse la demande d\'homologation à la DREETS (formulaire réglementaire). Envoi possible en ligne sur www.teleRC.travail.gouv.fr'
-    },
-    {
-      num: 6, titre: 'Réception par la DREETS (télétransmission)', type: 'normal',
-      label: 'Le', date: s.receptionDir, dateBrute: null,
-      desc: 'Par télétransmission sur www.teleRC.travail.gouv.fr, la réception est effective le jour même de l\'envoi. Le délai d\'instruction de 15 jours ouvrables court à compter du lendemain de cette réception.'
-    },
-    {
-      num: 7, titre: 'Début du délai d\'instruction DREETS', type: 'normal',
-      label: 'Le', date: s.debutInstruction, dateBrute: null,
-      desc: 'Le délai d\'instruction de 15 jours ouvrables commence le lendemain de la réception de la demande. Les dimanches et jours fériés légaux chômés ne sont pas comptés. Tout jour férié inclus dans le délai prolonge celui-ci d\'un jour ouvrable.'
-    },
-    {
-      num: 8, titre: 'Fin du délai d\'instruction — Homologation implicite', type: 'highlight',
-      label: 'À minuit le', date: s.finInstruction, dateBrute: s.finInstructionBrute,
-      desc: 'Expiration du délai d\'instruction de 15 jours ouvrables. En l\'absence de décision expresse de la DREETS, l\'homologation est réputée acquise à minuit. Si un jour férié est inclus dans le délai, il ne compte pas et prolonge le délai d\'un jour ouvrable.'
-    },
-    {
-      num: 9, titre: 'Date de rupture du contrat de travail — Sortie des effectifs', type: 'success',
-      label: 'Au plus tôt le', date: s.dateRupture, dateBrute: null,
-      desc: 'La rupture du contrat peut intervenir au plus tôt le lendemain de la fin du délai d\'instruction (ou le lendemain de la notification d\'une décision expresse d\'homologation si elle intervient avant). Cette date doit impérativement figurer dans la convention et être postérieure à la fin du délai d\'instruction.'
+  // Accepte JJ/MM/AAAA, J/M/AAAA, JJ-MM-AAAA, JJ.MM.AAAA, AAAA-MM-JJ, AAAA/MM/JJ, JJ/MM/AA.
+  // Rejette les dates inexistantes (31/02). Retourne null si invalide.
+  function parseDate(s) {
+    if (s instanceof Date) return isNaN(s) ? null : clone(s);
+    if (s == null) return null;
+    s = String(s).trim().replace(/\s+/g, '');
+    var y, m, d, r;
+    if ((r = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/))) { y = +r[1]; m = +r[2]; d = +r[3]; }
+    else if ((r = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/))) {
+      d = +r[1]; m = +r[2]; y = +r[3]; if (r[3].length === 2) y += 2000;
     }
-  ];
+    else if ((r = s.match(/^(\d{2})(\d{2})(\d{4})$/))) { d = +r[1]; m = +r[2]; y = +r[3]; }
+    else return null;
+    if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1900 || y > 2200) return null;
+    var dt = mk(y, m - 1, d);
+    if (dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+    return dt;
+  }
 
-  let html = '<div class="steps">';
-  steps.forEach(step => {
-    const dotClass = step.type === 'success' ? 'success' : (step.type === 'highlight' ? 'active' : '');
-    const bodyClass = step.type === 'success' ? 'success' : (step.type === 'highlight' ? 'highlight' : '');
-    const dateClass = step.type === 'success' ? 'step-date success' : 'step-date';
-    const warn = step.dateBrute ? warnTag(step.date, step.dateBrute) : '<div class="ok-tag">✓ '+jourSemaine(step.date)+'</div>';
+  // Montant : accepte "3250.5", "3 250,50", "3250,50 €", "3.250,50"
+  function parseMontant(s) {
+    if (s == null) return NaN;
+    if (typeof s === 'number') return s;
+    s = String(s).replace(/[\s  €]/g, '');
+    if (s === '') return NaN;
+    if (s.indexOf(',') >= 0 && s.indexOf('.') >= 0) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+      else s = s.replace(/,/g, '');
+    } else if (s.indexOf(',') >= 0) s = s.replace(',', '.');
+    if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+    return parseFloat(s);
+  }
 
-    html += `
-    <div class="step">
-      <div class="step-dot ${dotClass}">${step.num}</div>
-      <div class="step-body ${bodyClass}">
-        <div class="step-header">
-          <div class="step-title" contenteditable="true">${step.titre}</div>
-          <div class="${dateClass}" contenteditable="true">${formatFR(step.date)}</div>
-        </div>
-        <div class="step-desc" contenteditable="true"><em style="color:var(--text-dim);font-style:normal">${step.label} :</em> ${step.desc}</div>
-        ${warn}
-      </div>
-    </div>`;
-  });
-  html += '</div>';
+  /* ── JOURS FÉRIÉS (France métropolitaine, + option Alsace-Moselle) ── */
+  function paques(y) { // algorithme de Meeus/Jones/Butcher
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4,
+      f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+      i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7,
+      m = Math.floor((a + 11 * h + 22 * l) / 451), mo = Math.floor((h + l - 7 * m + 114) / 31),
+      da = ((h + l - 7 * m + 114) % 31) + 1;
+    return mk(y, mo - 1, da);
+  }
+  var _feries = {};
+  function feries(y, alsace) {
+    var key = y + (alsace ? 'A' : '');
+    if (_feries[key]) return _feries[key];
+    var p = paques(y), set = {};
+    [mk(y, 0, 1), addDays(p, 1), mk(y, 4, 1), mk(y, 4, 8), addDays(p, 39), addDays(p, 50),
+     mk(y, 6, 14), mk(y, 7, 15), mk(y, 10, 1), mk(y, 10, 11), mk(y, 11, 25)]
+      .forEach(function (d) { set[toISO(d)] = 1; });
+    if (alsace) { set[toISO(addDays(p, -2))] = 1; set[toISO(mk(y, 11, 26))] = 1; }
+    return (_feries[key] = set);
+  }
+  function isFerie(d, alsace) { return !!feries(d.getFullYear(), alsace)[toISO(d)]; }
+  function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
+  // Jour ouvrable = tous les jours sauf dimanche et jours fériés
+  function isOuvrable(d, alsace) { return d.getDay() !== 0 && !isFerie(d, alsace); }
+  // R1231-1 : délai expirant un samedi, dimanche, jour férié ou chômé → prorogé au 1er jour ouvrable suivant
+  function proroger(d, alsace) {
+    var r = clone(d);
+    while (isWeekend(r) || isFerie(r, alsace)) r = addDays(r, 1);
+    return r;
+  }
 
-  // Récap
-  html += `
-  <div class="recap" style="margin-top:32px">
-    <h2>Récapitulatif des dates clés</h2>
-    <div class="recap-grid">
-      <div class="recap-item"><label>Signature de la convention</label><div class="val" contenteditable="true">${formatFR(s.dateSign)}</div></div>
-      <div class="recap-item"><label>Fin du délai de rétractation</label><div class="val" contenteditable="true">${formatFR(s.finRetrac)} à minuit</div></div>
-      <div class="recap-item"><label>Envoi demande homologation (au plus tôt)</label><div class="val" contenteditable="true">${formatFR(s.envoiHomol)}</div></div>
-      <div class="recap-item"><label>Fin délai instruction DREETS</label><div class="val" contenteditable="true">${formatFR(s.finInstruction)} à minuit</div></div>
-      <div class="recap-item main"><label>Date de rupture du contrat — Sortie des effectifs</label><div class="val" contenteditable="true">${formatFR(s.dateRupture)}</div></div>
-    </div>
-  </div>`;
+  /* ── ANCIENNETÉ ──
+     debut  : date d'ancienneté
+     fin    : dernier jour pris en compte (inclus)
+     Retourne les mois complets + jours restants. */
+  function anciennete(debut, fin) {
+    var end = addDays(fin, 1); // borne exclusive
+    if (cmp(end, debut) <= 0) return { mois: 0, jours: 0, ans: 0, moisReste: 0 };
+    var m = (end.getFullYear() - debut.getFullYear()) * 12 + (end.getMonth() - debut.getMonth());
+    while (m > 0 && cmp(addMonths(debut, m), end) > 0) m--;
+    var jours = diffDays(addMonths(debut, m), end);
+    return { mois: m, jours: jours, ans: Math.floor(m / 12), moisReste: m % 12 };
+  }
 
-  document.getElementById('resultat').innerHTML = html;
-  document.getElementById('legal-box').style.display = 'block';
-  document.getElementById('footer-box').style.display = 'block';
-}
+  // Date d'ancienneté recalculée : décalée des périodes non prises en compte
+  // exclusions = { mois: n (saisie historique "ded"), jours: n (total des jours à neutraliser) }
+  function dateAncienneteAjustee(debut, exclusions) {
+    exclusions = exclusions || {};
+    var d = clone(debut);
+    if (exclusions.mois > 0) d = addMonths(d, Math.floor(exclusions.mois));
+    if (exclusions.jours > 0) d = addDays(d, Math.round(exclusions.jours));
+    return d;
+  }
 
-// ── LECTURE PARAMÈTRES URL (compatibilité wizard LLM) ──
-// Paramètres acceptés :
-//   mode  = retro | forward   (mode de calcul)
-//   date  = JJ/MM/AAAA        (date de sortie si retro, date de signature si forward)
-//   ref   = texte libre       (référence dossier optionnelle)
-function lireParamsURL() {
-  const p = new URLSearchParams(window.location.search);
+  /* ── INDEMNITÉ LÉGALE (R1234-2) ──
+     1/4 de mois par année jusqu'à 10 ans, 1/3 de mois par année au-delà ;
+     années incomplètes : prorata des mois complets. */
+  function indemniteLegale(sref, moisTotal, L) {
+    var seuil = L.seuilTranche * 12;
+    var m1 = Math.min(moisTotal, seuil), m2 = Math.max(moisTotal - seuil, 0);
+    var t1y = Math.floor(m1 / 12), t1m = m1 % 12, t2y = Math.floor(m2 / 12), t2m = m2 % 12;
+    var t1 = sref * L.tauxT1 * t1y, t2 = sref * L.tauxT2 * t2y;
+    var pro = t1m > 0 ? sref * L.tauxT1 * t1m / 12 : sref * L.tauxT2 * t2m / 12;
+    var total = sref * (L.tauxT1 * m1 + L.tauxT2 * m2) / 12;
+    // Calcul exact en centimes quand le salaire a au plus 2 décimales (évite les écarts de virgule flottante)
+    var cents = Math.round(sref * 100);
+    if (Math.abs(cents - sref * 100) < 1e-6 && L.tauxT1 === 1 / 4 && L.tauxT2 === 1 / 3)
+      total = cents * (3 * m1 + 4 * m2) / 144 / 100;
+    return { t1y: t1y, t1: t1, t2y: t2y, t2: t2, proMois: t1m || t2m, proTaux: t1m > 0 ? L.tauxT1 : L.tauxT2,
+             pro: pro, brut: total, total: round2(total) };
+  }
+  function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
 
-  // Conversion JJ/MM/AAAA → AAAA-MM-JJ pour input[type=date]
-  function toISOFromFR(s) {
-    if (!s) return null;
-    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-    if (m) return m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
-    if (s.match(/^\d{4}-\d{2}-\d{2}$/)) return s; // déjà ISO
+  function salaireReference(s12, s3) {
+    return s3 > s12 ? { sref: s3, base: '3m' } : { sref: s12, base: '12m' };
+  }
+
+  /* ── RUPTURE CONVENTIONNELLE : PLANNING ──
+     L1237-13 : rétractation 15 jours calendaires à compter du lendemain de la signature.
+     L1237-14 : instruction 15 jours ouvrables à compter du lendemain de la réception.
+     R1231-1  : délai expirant samedi/dimanche/férié → prorogé au 1er jour ouvrable suivant.
+     Rupture au plus tôt le lendemain de l'homologation (implicite = fin du délai d'instruction). */
+  function planningDepuisSignature(sign, opt) {
+    opt = opt || {};
+    var al = !!opt.alsace;
+    sign = clone(sign);
+    var debutRetrac = addDays(sign, 1);
+    var finRetracBrute = addDays(sign, 15);
+    var finRetrac = proroger(finRetracBrute, al);
+    var envoi = addDays(finRetrac, 1);       // au plus tôt
+    var reception = clone(envoi);             // TéléRC : réception le jour même
+    var n = 0, r = clone(reception), debutInstr = null;
+    while (n < 15) { r = addDays(r, 1); if (isOuvrable(r, al)) { n++; if (n === 1) debutInstr = clone(r); } }
+    var finInstrBrute = r;
+    var finInstr = proroger(finInstrBrute, al);
+    var rupture = addDays(finInstr, 1);
+    return { signature: sign, debutRetrac: debutRetrac, finRetracBrute: finRetracBrute, finRetrac: finRetrac,
+             envoi: envoi, reception: reception, debutInstruction: debutInstr,
+             finInstructionBrute: finInstrBrute, finInstruction: finInstr, ruptureAuPlusTot: rupture };
+  }
+
+  // Date de signature la plus tardive permettant une rupture au plus tard le jour souhaité
+  function planningDepuisSortie(sortie, opt) {
+    sortie = clone(sortie);
+    for (var k = 16; k < 120; k++) {
+      var s = addDays(sortie, -k);
+      var p = planningDepuisSignature(s, opt);
+      if (cmp(p.ruptureAuPlusTot, sortie) <= 0) { p.sortieSouhaitee = sortie; return p; }
+    }
     return null;
   }
 
-  const mode = p.get('mode');
-  if (mode === 'retro' || mode === 'forward') {
-    document.getElementById('mode').value = mode;
-    onModeChange(); // met à jour le label sans recalculer
-  }
+  return {
+    parseDate: parseDate, parseMontant: parseMontant, addDays: addDays, addMonths: addMonths, cmp: cmp,
+    diffDays: diffDays, toISO: toISO, toFR: toFR, toLong: toLong, JOURS: JOURS, MOIS: MOIS,
+    paques: paques, feries: feries, isFerie: isFerie, isWeekend: isWeekend, isOuvrable: isOuvrable,
+    proroger: proroger, anciennete: anciennete, dateAncienneteAjustee: dateAncienneteAjustee,
+    indemniteLegale: indemniteLegale, salaireReference: salaireReference, round2: round2,
+    planningDepuisSignature: planningDepuisSignature, planningDepuisSortie: planningDepuisSortie
+  };
+})();
 
-  const date = p.get('date');
-  if (date) {
-    const iso = toISOFromFR(date);
-    if (iso) document.getElementById('dateInput').value = iso;
-  }
+</script>
+<script>
+/* ── RÉTRO-PLANNING RUPTURE CONVENTIONNELLE ──
+   Paramètres URL (rétro-compatibles) :
+     mode = retro | forward    date = JJ/MM/AAAA    ref = texte    am = 1 (Alsace-Moselle)
+   Paramètres transmis tels quels au calculateur d'indemnité (optionnels) :
+     de s12 s3 arret da aorig ded jmnp jsus jcpe                                   */
+var C = PaieCore;
+var PASSTHROUGH = ['de', 's12', 's3', 'arret', 'da', 'aorig', 'ded', 'jmnp', 'jsus', 'jcpe'];
+var urlParams = new URLSearchParams(window.location.search);
 
-  const ref = p.get('ref');
-  if (ref) document.getElementById('refDossier').value = ref;
+function el(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; }); }
+
+function onModeChange() {
+  el('date-label').textContent = el('mode').value === 'retro'
+    ? 'Date de sortie des effectifs souhaitée' : 'Date de signature de la convention';
+  calculer();
 }
 
-// Init : lecture URL puis calcul
-window.onload = async function() {
-  const today = new Date();
-  const years = [today.getFullYear(), today.getFullYear()+1, today.getFullYear()+2];
-  await Promise.all(years.map(y => getFeries(y)));
+function erreur(msg) {
+  var e = el('erreur');
+  if (msg) { e.innerHTML = '⚠ ' + esc(msg); e.style.display = ''; }
+  else e.style.display = 'none';
+  if (msg) { el('resultat').innerHTML = ''; el('lien-indemnite').innerHTML = '';
+    el('legal-box').style.display = 'none'; el('footer-box').style.display = 'none'; }
+}
 
-  // Si aucun paramètre URL : date du jour par défaut
-  const p = new URLSearchParams(window.location.search);
-  if (!p.get('date')) {
-    document.getElementById('dateInput').value = toISO(today);
+function calculer() {
+  var val = el('dateInput').value;
+  if (!val) return erreur('Saisissez une date.');
+  var d = C.parseDate(val);
+  if (!d) return erreur('Date invalide.');
+  var mode = el('mode').value, opt = { alsace: el('alsace').checked };
+  var s = mode === 'retro' ? C.planningDepuisSortie(d, opt) : C.planningDepuisSignature(d, opt);
+  if (!s) return erreur('Impossible de construire le planning pour cette date.');
+  erreur(null);
+  render(s, mode);
+}
+
+function tag(d, brute) {
+  if (brute && C.cmp(d, brute) !== 0)
+    return '<div class="warn-tag">⚠ ' + C.JOURS[brute.getDay()] + ' ' + C.toFR(brute) + ' — prorogé au ' + C.JOURS[d.getDay()] + '</div>';
+  return '<div class="ok-tag">✓ ' + C.JOURS[d.getDay()] + '</div>';
+}
+
+function render(s, mode) {
+  var retro = mode === 'retro';
+  var sortie = retro ? s.sortieSouhaitee : s.ruptureAuPlusTot;
+  var steps = [
+    { titre: 'Entretien(s) préparatoire(s)', type: '', label: 'Avant le', date: s.signature,
+      desc: "Au moins 1 entretien obligatoire, avant la signature. Le salarié peut être assisté (personnel de l'entreprise, ou conseiller du salarié en l'absence d'IRP). L'employeur ne peut être assisté que si le salarié l'est." },
+    { titre: 'Signature de la convention de rupture', type: 'highlight',
+      label: retro ? 'Au plus tard le' : 'Date de signature', date: s.signature,
+      desc: (retro ? 'Date de signature la plus tardive permettant une sortie au ' + C.toFR(sortie) + '. ' : '') +
+        'Les deux parties signent la convention, qui mentionne la date de rupture envisagée. Un exemplaire est remis au salarié.' },
+    { titre: 'Début du délai de rétractation', type: '', label: 'Le lendemain de la signature', date: s.debutRetrac,
+      desc: 'Le délai de 15 jours calendaires commence le lendemain de la signature. Chaque partie peut se rétracter par lettre adressée par tout moyen attestant de sa date de réception par l\'autre partie.' },
+    { titre: 'Fin du délai de rétractation', type: 'highlight', label: 'À minuit le', date: s.finRetrac, brute: s.finRetracBrute,
+      desc: 'Expiration du délai de 15 jours calendaires. S\'il expire un samedi, un dimanche ou un jour férié, il est prorogé au premier jour ouvrable suivant (R1231-1).' },
+    { titre: 'Envoi de la demande d\'homologation (TéléRC)', type: '', label: 'Au plus tôt le', date: s.envoi,
+      desc: 'Dès le lendemain de la fin du délai de rétractation, la partie la plus diligente adresse la demande d\'homologation à la DREETS via www.telerc.travail.gouv.fr.' },
+    { titre: 'Réception par la DREETS (télétransmission)', type: '', label: 'Le', date: s.reception,
+      desc: 'Par télétransmission, la réception est effective le jour même de l\'envoi. Le délai d\'instruction court à compter du lendemain.' },
+    { titre: 'Début du délai d\'instruction DREETS', type: '', label: '1er jour ouvrable', date: s.debutInstruction,
+      desc: '15 jours ouvrables (du lundi au samedi, hors jours fériés) à compter du lendemain de la réception.' },
+    { titre: 'Fin du délai d\'instruction — Homologation implicite', type: 'highlight', label: 'À minuit le', date: s.finInstruction, brute: s.finInstructionBrute,
+      desc: 'Sans décision expresse de la DREETS, l\'homologation est réputée acquise. Un délai expirant un samedi, un dimanche ou un jour férié est prorogé au premier jour ouvrable suivant (R1231-1).' },
+    { titre: 'Date de rupture du contrat — Sortie des effectifs', type: 'success',
+      label: retro ? 'Date souhaitée' : 'Au plus tôt le', date: sortie,
+      desc: retro
+        ? 'Date de rupture souhaitée, compatible avec le calendrier (rupture possible au plus tôt le ' + C.toLong(s.ruptureAuPlusTot) + ').'
+        : 'La rupture peut intervenir au plus tôt le lendemain de l\'homologation. Une date plus tardive peut être fixée dans la convention.' }
+  ];
+
+  var html = '<div class="steps">';
+  steps.forEach(function (st, i) {
+    var dot = st.type === 'success' ? 'success' : (st.type === 'highlight' ? 'active' : '');
+    var body = st.type === 'success' ? 'success' : (st.type === 'highlight' ? 'highlight' : '');
+    html += '<div class="step"><div class="step-dot ' + dot + '">' + (i + 1) + '</div>' +
+      '<div class="step-body ' + body + '"><div class="step-header">' +
+      '<div class="step-title" contenteditable="true">' + st.titre + '</div>' +
+      '<div class="step-date' + (st.type === 'success' ? ' success' : '') + '" contenteditable="true">' + C.toLong(st.date) + '</div></div>' +
+      '<div class="step-desc" contenteditable="true"><em style="color:var(--text-dim);font-style:normal">' + st.label + ' :</em> ' + st.desc + '</div>' +
+      tag(st.date, st.brute) + '</div></div>';
+  });
+  html += '</div>';
+
+  var ref = el('refDossier').value.trim();
+  html += '<div class="recap" style="margin-top:32px"><h2>Récapitulatif des dates clés' + (ref ? ' — ' + esc(ref) : '') + '</h2><div class="recap-grid">' +
+    '<div class="recap-item"><label>Signature de la convention' + (retro ? ' (au plus tard)' : '') + '</label><div class="val" id="r-sign" contenteditable="true">' + C.toLong(s.signature) + '</div></div>' +
+    '<div class="recap-item"><label>Fin du délai de rétractation</label><div class="val" contenteditable="true">' + C.toLong(s.finRetrac) + ' à minuit</div></div>' +
+    '<div class="recap-item"><label>Envoi demande homologation (au plus tôt)</label><div class="val" contenteditable="true">' + C.toLong(s.envoi) + '</div></div>' +
+    '<div class="recap-item"><label>Fin délai instruction DREETS</label><div class="val" contenteditable="true">' + C.toLong(s.finInstruction) + ' à minuit</div></div>' +
+    '<div class="recap-item main"><label>Date de rupture du contrat — Sortie des effectifs' + (retro ? '' : ' (au plus tôt)') + '</label><div class="val" id="r-rupture" contenteditable="true">' + C.toLong(sortie) + '</div></div>' +
+    '</div></div>';
+
+  el('resultat').innerHTML = html;
+  el('legal-box').style.display = 'block';
+  el('footer-box').style.display = 'block';
+
+  // Lien vers le calculateur d'indemnité RC, pré-rempli
+  var q = new URLSearchParams();
+  PASSTHROUGH.forEach(function (k) { if (k === 'de' && urlParams.get(k)) q.set(k, urlParams.get(k)); });
+  q.set('ds', C.toFR(s.signature));
+  q.set('df', C.toFR(sortie));
+  PASSTHROUGH.forEach(function (k) { if (k !== 'de' && urlParams.get(k)) q.set(k, urlParams.get(k)); });
+  var href = 'indemnite-rc.html?' + q.toString().replace(/%2F/g, '/');
+  el('lien-indemnite').innerHTML = '<a class="lien-ind" id="a-indemnite" href="' + esc(href) + '">' +
+    '→ Calculer l\'indemnité de rupture conventionnelle avec ces dates' +
+    '<small>Signature : ' + C.toFR(s.signature) + ' · Sortie : ' + C.toFR(sortie) + (urlParams.get('de') ? '' : ' · la date d\'ancienneté et les salaires seront à saisir') + '</small></a>';
+}
+
+/* ── INIT : lecture URL puis calcul automatique ── */
+(function init() {
+  var mode = (urlParams.get('mode') || '').trim().toLowerCase();
+  if (mode === 'retro' || mode === 'forward') el('mode').value = mode;
+  el('date-label').textContent = el('mode').value === 'retro'
+    ? 'Date de sortie des effectifs souhaitée' : 'Date de signature de la convention';
+  if (urlParams.get('am') === '1') el('alsace').checked = true;
+  var ref = urlParams.get('ref'); if (ref) el('refDossier').value = ref.slice(0, 60);
+  var raw = urlParams.get('date'), d = raw ? C.parseDate(raw) : new Date();
+  if (raw && !d) {
+    erreur('Date transmise dans le lien invalide (« ' + raw + ' »). Format attendu : JJ/MM/AAAA.');
+    return;
   }
-
-  lireParamsURL();
+  el('dateInput').value = C.toISO(d);
   calculer();
-};
+})();
+el('dateInput').addEventListener('input', calculer);
+el('refDossier').addEventListener('input', calculer);
+
 </script>
 </body>
 </html>
