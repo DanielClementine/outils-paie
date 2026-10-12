@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<!--
+  OUTILS PAIE FRANCE · /licenciement — Version 7.0 (octobre 2026) — OPTIMYZ HR
+  Sources : L1234-9 à L1234-11, R1234-1 à R1234-5, L1226-4, L1226-14, L1226-16 C.trav.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indemnité légale de licenciement — Outils Paie</title><link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg:#0a0c12; --s:#111420; --s2:#181c2e; --s3:#1e2338;
+  --b:#1f2540; --b2:#2a3060;
+  --a:#3d6fff; --gold:#f0b429; --green:#2dd4a0; --red:#ff5c5c;
+  --t:#dde3f5; --m:#6b7299;
+  --mono:'DM Mono',monospace; --disp:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:var(--body);min-height:100vh;overflow-x:hidden}
+
+/* TOPBAR */
+.topbar{background:var(--s);border-bottom:1px solid var(--b);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{font-family:var(--disp);font-size:.75rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--a)}
+.topbar-tag{font-family:var(--mono);font-size:.65rem;color:var(--m);background:var(--s2);padding:.25rem .6rem;border-radius:2px;border:1px solid var(--b)}
+
+/* HERO */
+.hero{padding:2.5rem 1.5rem 1.5rem;max-width:800px;margin:0 auto}
+.badge{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.65rem;color:var(--a);background:rgba(61,111,255,.08);border:1px solid rgba(61,111,255,.25);padding:.3rem .7rem;border-radius:2px;margin-bottom:1rem;letter-spacing:.08em;text-transform:uppercase}
+.badge::before{content:'';width:6px;height:6px;background:var(--a);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:var(--disp);font-size:clamp(1.5rem,4vw,2.2rem);font-weight:800;line-height:1.1;margin-bottom:.5rem;letter-spacing:-.02em}
+.hero h1 span{color:var(--a)}
+.hero-sub{font-size:.85rem;color:var(--m);line-height:1.6}
+
+/* LAYOUT 2 COLONNES */
+.layout{max-width:800px;margin:0 auto;padding:0 1.5rem 4rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.col-full{grid-column:1/-1}
+
+/* CARDS */
+.card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:1.3rem 1.4rem;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card-label{font-family:var(--mono);font-size:.62rem;color:var(--a);letter-spacing:.12em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:.5rem}
+.card-label::before{content:'';width:3px;height:12px;background:var(--a);border-radius:2px}
+
+/* MODE SAISIE */
+.mode-tabs{display:flex;gap:.5rem;margin-bottom:1.2rem}
+.mode-tab{font-family:var(--mono);font-size:.7rem;padding:.4rem .9rem;border-radius:3px;border:1px solid var(--b);background:transparent;color:var(--m);cursor:pointer;transition:.2s}
+.mode-tab.active{background:var(--a);border-color:var(--a);color:#fff}
+
+/* FORMULAIRES */
+.form-group{margin-bottom:.9rem}
+.form-label{font-size:.78rem;color:var(--m);margin-bottom:.3rem;display:block}
+.form-label strong{color:var(--t)}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:4px;padding:.5rem .7rem;font-family:var(--mono);font-size:.82rem;color:var(--t);outline:none;transition:.2s}
+.form-input:focus{border-color:var(--a);box-shadow:0 0 0 2px rgba(61,111,255,.15)}
+.form-input.error{border-color:var(--red)}
+
+/* GRILLE SALAIRES */
+.sal-grid{width:100%;border-collapse:collapse;font-size:.8rem}
+.sal-grid th{font-family:var(--mono);font-size:.6rem;color:var(--m);text-transform:uppercase;letter-spacing:.08em;padding:.5rem .6rem;border-bottom:1px solid var(--b);text-align:left}
+.sal-grid td{padding:.35rem .4rem;border-bottom:1px solid var(--b)}
+.sal-grid tr:last-child td{border-bottom:none}
+.sal-grid .mois-label{font-size:.78rem;color:var(--m);white-space:nowrap}
+.sal-grid .mois-label.ref3{color:var(--gold);font-weight:500}
+.sal-input{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:3px;padding:.3rem .5rem;font-family:var(--mono);font-size:.78rem;color:var(--t);text-align:right;outline:none;transition:.2s}
+.sal-input:focus{border-color:var(--a)}
+.sal-input.prime-cell{background:var(--s3)}
+
+/* NOTE EXCLUSIONS */
+.note-excl{background:rgba(240,180,41,.05);border:1px solid rgba(240,180,41,.2);border-radius:4px;padding:.8rem 1rem;font-size:.75rem;color:var(--m);line-height:1.7;margin-bottom:1rem}
+.note-excl strong{color:var(--gold)}
+.note-excl ul{margin:.4rem 0 0 1rem}
+
+/* BOUTON CALCUL */
+.btn-calc{width:100%;background:var(--a);color:#fff;font-family:var(--disp);font-size:.9rem;font-weight:700;letter-spacing:.05em;padding:.8rem;border:none;border-radius:4px;cursor:pointer;transition:.2s;margin-top:.5rem}
+.btn-calc:hover{background:#5a7fff;transform:translateY(-1px)}
+
+/* INAPTITUDE */
+.inapt-toggle{display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:var(--s2);border:1px solid var(--b);border-radius:4px;cursor:pointer;margin-bottom:.5rem;transition:.2s}
+.inapt-toggle:hover{border-color:var(--b2)}
+.inapt-toggle input{accent-color:var(--gold);width:16px;height:16px;cursor:pointer}
+.inapt-label{font-size:.82rem;line-height:1.4}
+.inapt-label strong{color:var(--gold)}
+
+/* RÉSULTATS */
+.row{display:flex;justify-content:space-between;align-items:baseline;padding:.45rem 0;border-bottom:1px solid var(--b);gap:1rem;font-size:.85rem}
+.row:last-child{border-bottom:none}
+.row-label{color:var(--m);flex-shrink:0}
+.row-value{font-family:var(--mono);font-weight:500;text-align:right}
+.row-value.gold{color:var(--gold);font-weight:600}
+.row-value.green{color:var(--green)}
+.row-value.red{color:var(--red)}
+
+.formula{background:var(--s2);border:1px solid var(--b);border-radius:4px;padding:.8rem 1.1rem;margin-bottom:.6rem}
+.formula-title{font-family:var(--mono);font-size:.6rem;color:var(--m);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+.formula-line{font-family:var(--mono);font-size:.8rem;line-height:2;display:flex;flex-wrap:wrap;align-items:center;gap:.2rem}
+.f-num{color:var(--a)} .f-op{color:var(--m)} .f-res{color:var(--gold);font-weight:600}
+.f-zero{color:var(--m);font-style:italic}
+
+.result-card{background:linear-gradient(135deg,#0d1535,#111420,#0a0f20);border:2px solid var(--a);border-radius:6px;padding:1.8rem 1.4rem;text-align:center;position:relative;overflow:hidden}
+.result-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 50% 0%,rgba(61,111,255,.06),transparent 60%);pointer-events:none}
+.result-label{font-family:var(--mono);font-size:.65rem;color:var(--a);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.5rem}
+.result-amount{font-family:var(--disp);font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;color:var(--gold);letter-spacing:-.03em;line-height:1;margin-bottom:.4rem}
+.result-detail{font-family:var(--mono);font-size:.7rem;color:var(--m);margin-top:.3rem}
+
+.inapt-badge{display:inline-block;background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.4);color:var(--gold);font-family:var(--mono);font-size:.65rem;padding:.2rem .6rem;border-radius:2px;margin-top:.5rem;letter-spacing:.08em}
+
+/* DISCLAIMER */
+.disclaimer{border-left:3px solid var(--gold);background:rgba(240,180,41,.04);border-radius:0 4px 4px 0;padding:.8rem 1.1rem;font-size:.75rem;color:var(--m);line-height:1.7}
+.disclaimer strong{color:var(--gold)}
+.disclaimer a{color:var(--a);text-decoration:none}
+
+/* ERREUR */
+.error-msg{display:none;background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-left:3px solid var(--red);border-radius:4px;padding:.8rem 1rem;font-size:.8rem;color:var(--red);line-height:1.6;margin-bottom:.8rem}
+.error-msg.visible{display:block}
+
+/* SECTION RÉSULTATS */
+#resultsSection{display:none}
+#resultsSection.visible{display:contents}
+
+/* FOOTER */
+footer{font-family:var(--mono);font-size:.62rem;color:var(--m);text-align:center;padding:1.5rem;border-top:1px solid var(--b);line-height:2.2}
+footer a{color:var(--a);text-decoration:none}
+
+/* MOBILE */
+@media(max-width:600px){
+  .layout{grid-template-columns:1fr}
+  .col-full{grid-column:1}
+  .topbar{padding:.6rem 1rem}
+  .hero{padding:1.8rem 1rem 1.2rem}
+  .layout{padding:0 1rem 3rem}
+  .sal-grid th,.sal-grid td{padding:.3rem .3rem}
+}
+
+.grid-dates{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem}
+.hint{font-size:.7rem;color:var(--m);margin-top:.3rem;line-height:1.5}
+select.form-input{font-family:var(--body)}
+.info-card{background:rgba(61,111,255,.05);border:1px solid rgba(61,111,255,.25);border-radius:4px;padding:.8rem 1rem;font-size:.75rem;color:var(--m);line-height:1.7}
+.info-card strong{color:var(--t)}
+.warn-card{background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.3);border-radius:4px;padding:.8rem 1rem;font-size:.75rem;color:var(--m);line-height:1.7}
+.warn-card strong{color:var(--gold)}
+.auto-badge{display:inline-block;font-family:var(--mono);font-size:.62rem;color:var(--green);border:1px solid rgba(45,212,160,.35);background:rgba(45,212,160,.06);padding:.2rem .6rem;border-radius:2px;margin-top:.6rem}
+.top-result{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem 1rem;margin-top:1rem;padding:.9rem 1.1rem;border:2px solid var(--a);border-radius:6px;background:var(--s);text-decoration:none;color:var(--m);font-size:.8rem}
+.top-result strong{font-family:var(--disp);font-size:1.6rem;color:var(--gold)}
+.top-result span:last-child{margin-left:auto;color:var(--a)}
+@media print{.topbar,.btn-calc,.mode-tabs,footer{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">⚖ Outils Paie France</div>
+  <div class="topbar-tag">/licenciement</div>  </div>
+
+<div class="hero">
+    <div class="badge">Calcul légal · Art. L1234-9 & R1234-1 à R1234-5 C.trav.</div>
+  <h1>Indemnité légale de <span>licenciement</span></h1>
+      <p class="hero-sub">CDI · Plancher légal minimal · Vérifiez toujours votre convention collective</p>
+  <div class="auto-badge">⚡ Calcul automatique — les résultats se mettent à jour à chaque saisie</div>
+  <a class="top-result" id="top-result" href="#cardResult" style="display:none"><span id="top-result-label">Indemnité minimale</span><strong id="top-result-amount">—</strong><span>Voir le détail ↓</span></a>
+</div>
+
+<div class="layout">
+
+  <!-- ── ÉTAPE 1 : DATES ── -->
+  <div class="card col-full" style="animation-delay:.05s">
+    <div class="card-label">Étape 1 — Dates du contrat</div>
+        <div class="form-group">
+      <label class="form-label" for="i-motif"><strong>Motif du licenciement</strong></label>
+      <select class="form-input" id="i-motif">
+        <option value="perso">Motif personnel (hors faute grave/lourde) ou économique</option>
+        <option value="inapt_np">Inaptitude d'origine non professionnelle</option>
+        <option value="inapt_pro">Inaptitude d'origine professionnelle (AT/MP) — indemnité spéciale</option>
+      </select>
+      <div class="hint" id="hint-motif"></div>
+    </div>
+        <div class="grid-dates">
+      <div class="form-group">
+        <label class="form-label" for="i-entree"><strong>Date d'ancienneté</strong> dans l'entreprise</label>
+        <input class="form-input" type="date" id="i-entree">
+      </div>
+            <div class="form-group">
+        <label class="form-label" for="i-notif"><strong>Date de notification</strong> (envoi de la lettre)</label>
+        <input class="form-input" type="date" id="i-notif">
+        <div class="hint">Condition des 8 mois appréciée à cette date · Début de la période de référence des salaires</div>
+      </div>
+      <div class="form-group" id="grp-fin">
+        <label class="form-label" for="i-fin"><strong>Date de fin de préavis</strong> (fin du contrat)</label>
+        <input class="form-input" type="date" id="i-fin">
+        <div class="hint">Préavis dispensé ou non exécuté (inaptitude non professionnelle) : date de fin <strong>théorique</strong> du préavis</div>
+      </div>
+                </div>
+  </div>
+
+  <!-- ── ÉTAPE 2 : PÉRIODES NON PRISES EN COMPTE ── -->
+  <div class="card col-full" style="animation-delay:.08s">
+    <div class="card-label">Étape 2 — Périodes de suspension à neutraliser (L1234-11)</div>
+    <div class="grid-dates">
+      <div class="form-group">
+        <label class="form-label" for="i-jmnp"><strong>Jours d'arrêt maladie non professionnelle</strong> et accident de trajet <em>terminés</em></label>
+        <input class="form-input" type="number" id="i-jmnp" min="0" step="1" placeholder="0">
+        <div class="hint">Jours calendaires, hors arrêt en cours (saisi ci-dessous) · Accident de trajet : Cass. soc. 11/03/2026 n°24-13.123</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="i-jsus"><strong>Jours d'autres suspensions non assimilées</strong></label>
+        <input class="form-input" type="number" id="i-jsus" min="0" step="1" placeholder="0">
+        <div class="hint">Congé sans solde, sabbatique, pour création d'entreprise, grève, mise à pied…</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="i-jcpe"><strong>Jours de congé parental d'éducation à temps plein</strong></label>
+        <input class="form-input" type="number" id="i-jcpe" min="0" step="1" placeholder="0">
+        <div class="hint">Compté pour moitié dans l'ancienneté (L1225-54) → la moitié est neutralisée</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="i-mois-ded"><strong>Autres mois à déduire</strong> (optionnel)</label>
+        <input class="form-input" type="number" id="i-mois-ded" min="0" step="1" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group" style="background:var(--s2);border:1px solid var(--b);border-radius:4px;padding:.7rem 1rem">
+      <label class="form-label" style="display:flex;gap:.6rem;align-items:center;cursor:pointer;margin:0">
+        <input type="checkbox" id="i-arret-encours" style="accent-color:var(--gold);width:16px;height:16px">
+        <span><strong>Salarié en arrêt de travail au moment de la rupture</strong></span>
+      </label>
+      <div id="grp-arret-encours" style="display:none;margin-top:.7rem" class="grid-dates">
+        <div>
+          <label class="form-label" for="i-debut-arret"><strong>Début de l'arrêt en cours</strong></label>
+          <input class="form-input" type="date" id="i-debut-arret">
+        </div>
+        <div>
+          <label class="form-label" for="i-orig-arret"><strong>Origine de l'arrêt</strong></label>
+          <select class="form-input" id="i-orig-arret">
+            <option value="np">Maladie non professionnelle / accident de trajet → neutralisé</option>
+            <option value="pro">Accident du travail / maladie professionnelle → compté</option>
+          </select>
+        </div>
+        <div class="hint" id="hint-arret-encours" style="grid-column:1/-1"></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <strong>Comptent intégralement</strong> (ne rien saisir) : arrêts AT/MP reconnus, congés maternité, paternité, adoption, congé parental à temps partiel, congés payés, formation.
+      Une convention collective peut prévoir la prise en compte des absences maladie : vérifiez-la.
+    </div>
+  </div>
+
+  <!-- ── ÉTAPE 3 : SALAIRES ── -->
+  <div class="card col-full" style="animation-delay:.1s">
+    <div class="card-label">Étape 3 — Salaires de référence</div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab" id="tab-manuel" type="button" onclick="switchMode('manuel')">Saisie directe des moyennes</button>
+      <button class="mode-tab" id="tab-auto" type="button" onclick="switchMode('auto')">Saisie mois par mois</button>
+      <button class="mode-tab" id="tab-arret" type="button" onclick="switchMode('arret')">Arrêt / temps partiel thérapeutique</button>
+    </div>
+
+    <!-- MODE MANUEL -->
+    <div id="mode-manuel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+        <div class="form-group">
+          <label class="form-label" for="i-s12"><strong>Salaire brut moyen — 12 derniers mois</strong><br><span style="font-size:.72rem">Primes obligatoires/conventionnelles non discrétionnaires et AEN inclus</span></label>
+          <input class="form-input" type="text" inputmode="decimal" id="i-s12" placeholder="ex : 3250,00">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="i-s3"><strong>Salaire brut moyen — 3 derniers mois</strong><br><span style="font-size:.72rem">Primes annuelles/exceptionnelles au prorata (× 3/12)</span></label>
+          <input class="form-input" type="text" inputmode="decimal" id="i-s3" placeholder="ex : 3500,00">
+        </div>
+      </div>
+      <div class="hint" id="hint-manuel-arret" style="display:none;color:var(--gold)">⚠ Salarié en arrêt : les moyennes doivent porter sur les 12/3 mois précédant le début de l'arrêt (ou du temps partiel thérapeutique).</div>
+    </div>
+
+    <!-- MODE ARRÊT : date de début -->
+    <div id="mode-arret" style="display:none">
+      <div class="warn-card" style="margin-bottom:1rem">
+        <strong>⚠ Salarié en arrêt de travail ou en temps partiel thérapeutique</strong><br>
+        Période de référence = 12 (ou 3) mois <strong>précédant le début de l'arrêt</strong> (Cass. soc. 23/05/2017 n°15-22.223),
+        ou précédant le <strong>temps partiel thérapeutique</strong> et l'arrêt qui l'a éventuellement précédé (Cass. soc. 12/06/2024 n°23-13.975 ; 05/03/2025 n°23-20.172).
+      </div>
+      <div class="form-group" style="max-width:260px">
+        <label class="form-label" for="i-arret"><strong>Date de début de l'arrêt</strong> (ou du temps partiel thérapeutique)</label>
+        <input class="form-input" type="date" id="i-arret">
+      </div>
+    </div>
+
+    <!-- GRILLE MOIS PAR MOIS (modes auto et arrêt) -->
+    <div id="mode-grille" style="display:none">
+      <div class="note-excl">
+        <strong>À inclure :</strong> salaire fixe, variable, commissions, primes non discrétionnaires, avantages en nature, rappels de salaire.
+        <strong>À exclure :</strong> remboursements de frais, indemnité compensatrice de congés payés, indemnité compensatrice de préavis, gratifications purement bénévoles, intéressement et participation.<br>
+        Absence pour raison de santé dans la période : reconstituer le salaire brut comme si le salarié avait été présent.<br>
+        <strong>★ Colonne « corrigé » (3 derniers mois) :</strong> si le mois contient une prime de périodicité &gt; 3 mois, saisir
+        <span style="font-family:var(--mono);color:var(--t)">salaire réel − prime + prime × 3 ÷ périodicité (mois)</span>. Sinon laisser vide.
+      </div>
+      <div style="overflow-x:auto">
+        <table class="sal-grid">
+          <thead><tr><th>Mois</th><th>Salaire brut réel</th><th style="color:var(--gold)">Corrigé ★ (3 derniers mois)</th></tr></thead>
+          <tbody id="sal-tbody"></tbody>
+        </table>
+      </div>
+      <div class="hint" id="hint-grille"></div>
+    </div>
+
+    <div class="warn-card" style="margin-top:.8rem">
+      <strong>Carrière mixte temps plein / temps partiel :</strong> l'indemnité doit être proratisée selon les périodes (L3123-5) — non géré par cet outil.
+      Congé parental à temps partiel : retenir le salaire à temps plein.
+    </div>
+  </div>
+
+  <!-- ERREUR -->
+  <div class="error-msg col-full" id="errorMsg"></div>
+
+  <div class="col-full">
+    <button class="btn-calc" type="button" onclick="calculer(false)">Recalculer →</button>
+  </div>
+
+  <!-- ── RÉSULTATS ── -->
+  <div id="resultsSection">
+
+    <div class="card" style="animation-delay:.05s" id="cardDonnees">
+      <div class="card-label">Données retenues</div>
+      <div class="row"><span class="row-label">Motif</span><span class="row-value" id="o-motif">—</span></div>      <div class="row"><span class="row-label">Date d'ancienneté</span><span class="row-value" id="o-entree">—</span></div>
+      <div class="row" id="row-ded" style="display:none"><span class="row-label">Périodes neutralisées</span><span class="row-value red" id="o-ded">—</span></div>
+      <div class="row" id="row-arret-ded" style="display:none"><span class="row-label">Arrêt non pro en cours neutralisé</span><span class="row-value red" id="o-arret-ded">—</span></div>
+      <div class="row" id="row-entree-aj" style="display:none"><span class="row-label">Date d'ancienneté recalculée</span><span class="row-value" id="o-entree-aj">—</span></div>
+            <div class="row"><span class="row-label">Notification</span><span class="row-value" id="o-notif">—</span></div>
+      <div class="row"><span class="row-label">Ancienneté à la notification</span><span class="row-value" id="o-anc-notif">—</span></div>
+                  <div class="row"><span class="row-label" id="o-fin-label">Fin du contrat</span><span class="row-value" id="o-fin">—</span></div>
+      <div class="row"><span class="row-label">Ancienneté retenue (mois complets)</span><span class="row-value gold" id="o-anc">—</span></div>
+      <div class="row"><span class="row-label">Moyenne 12 mois</span><span class="row-value" id="o-s12">—</span></div>
+      <div class="row"><span class="row-label">Moyenne 3 mois</span><span class="row-value" id="o-s3">—</span></div>
+      <div class="row"><span class="row-label">Salaire de référence retenu</span><span class="row-value gold" id="o-sref">—</span></div>
+    </div>
+
+    <div class="card" style="animation-delay:.1s" id="cardCalc">
+      <div class="card-label">Détail du calcul</div>
+      <div class="formula"><div class="formula-title">Années ≤ 10 ans — 1/4 de mois par année</div><div class="formula-line" id="f-t1"></div></div>
+      <div class="formula"><div class="formula-title">Années &gt; 10 ans — 1/3 de mois par année</div><div class="formula-line" id="f-t2"></div></div>
+      <div class="formula"><div class="formula-title">Mois incomplets — prorata (mois complets)</div><div class="formula-line" id="f-pro"></div></div>
+            <div class="formula" id="f-inapt-block" style="display:none">
+        <div class="formula-title" style="color:var(--gold)">Doublement — inaptitude professionnelle (L1226-14)</div>
+        <div class="formula-line" id="f-inapt"></div>
+      </div>
+          </div>
+
+    <div class="result-card col-full" style="animation-delay:.15s" id="cardResult">
+      <div class="result-label" id="o-result-label">Indemnité légale minimale</div>            <div class="result-amount" id="o-total">—</div>
+      <div class="result-detail" id="o-detail">—</div>
+      <div class="inapt-badge" id="o-inapt-badge" style="display:none">× 2 — Inaptitude professionnelle · L1226-14</div>    </div>
+
+        <div class="info-card col-full" id="note-inapt" style="display:none">
+      <strong>Inaptitude professionnelle :</strong> indemnité spéciale due sans condition d'ancienneté minimale ; ancienneté arrêtée à la date de notification
+      (l'indemnité compensatrice de L1226-14, équivalente au préavis, est due en plus et n'allonge pas l'ancienneté).
+      Salaire de référence : moyenne des 3 derniers mois qu'aurait perçus le salarié s'il avait continué à travailler (L1226-16) — l'outil retient la plus favorable des moyennes saisies.
+      Seule l'indemnité <strong>légale</strong> est doublée ; l'indemnité conventionnelle s'applique si elle est supérieure.
+    </div>
+        
+    <div class="disclaimer col-full" style="animation-delay:.2s">
+      <strong>⚠ Indemnité légale uniquement.</strong> Montant plancher. La convention collective, le contrat ou un usage peuvent prévoir plus favorable — vérifiez avant d'établir le solde de tout compte.<br><br>
+      <strong>Sources :</strong>
+      <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F987" target="_blank" rel="noopener">service-public.fr/F987</a> · L1234-9 à L1234-11, R1234-1 à R1234-5, L1226-4, L1226-14, L1226-16 C.trav.            · Vérifié : <span id="o-dateverif"></span> · Cet outil ne constitue pas un conseil juridique.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Outils Paie · Propulsé par OPTIMYZ HR LTD<br>
+  <a href="https://www.linkedin.com/in/danielclementine" target="_blank" rel="noopener">LinkedIn</a>
+  &nbsp;·&nbsp;
+  <a href="mailto:optimyzhr@gmail.com">optimyzhr@gmail.com</a>
+  &nbsp;·&nbsp;
+  <a href="https://wa.me/23059744795" target="_blank" rel="noopener">WhatsApp +230 5 974 4795</a>
+</footer>
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PaieCore — moteur commun (licenciement, RC, rétro-planning)
+   Fonctions pures, sans dépendance réseau.
+   Toutes les dates sont des Date LOCALES à minuit.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var PaieCore = (function () {
+
+  /* ── DATES ── */
+  function mk(y, m, d) { return new Date(y, m, d); }
+  function clone(d) { return mk(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function addDays(d, n) { return mk(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+  // Ajoute n mois en bornant au dernier jour du mois (31/01 + 1 mois = 28/02)
+  function addMonths(d, n) {
+    var y = d.getFullYear(), m = d.getMonth() + n;
+    var ty = y + Math.floor(m / 12), tm = ((m % 12) + 12) % 12;
+    return mk(ty, tm, Math.min(d.getDate(), daysInMonth(ty, tm)));
+  }
+  function cmp(a, b) { return a.getTime() - b.getTime(); }
+  function diffDays(a, b) { return Math.round((clone(b) - clone(a)) / 86400000); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function toISO(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function toFR(d) { return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
+  var JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  function toLong(d) { return JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()] + ' ' + d.getFullYear(); }
+
+  // Accepte JJ/MM/AAAA, J/M/AAAA, JJ-MM-AAAA, JJ.MM.AAAA, AAAA-MM-JJ, AAAA/MM/JJ, JJ/MM/AA.
+  // Rejette les dates inexistantes (31/02). Retourne null si invalide.
+  function parseDate(s) {
+    if (s instanceof Date) return isNaN(s) ? null : clone(s);
+    if (s == null) return null;
+    s = String(s).trim().replace(/\s+/g, '');
+    var y, m, d, r;
+    if ((r = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/))) { y = +r[1]; m = +r[2]; d = +r[3]; }
+    else if ((r = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/))) {
+      d = +r[1]; m = +r[2]; y = +r[3]; if (r[3].length === 2) y += 2000;
+    }
+    else if ((r = s.match(/^(\d{2})(\d{2})(\d{4})$/))) { d = +r[1]; m = +r[2]; y = +r[3]; }
+    else return null;
+    if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1900 || y > 2200) return null;
+    var dt = mk(y, m - 1, d);
+    if (dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+    return dt;
+  }
+
+  // Montant : accepte "3250.5", "3 250,50", "3250,50 €", "3.250,50"
+  function parseMontant(s) {
+    if (s == null) return NaN;
+    if (typeof s === 'number') return s;
+    s = String(s).replace(/[\s  €]/g, '');
+    if (s === '') return NaN;
+    if (s.indexOf(',') >= 0 && s.indexOf('.') >= 0) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+      else s = s.replace(/,/g, '');
+    } else if (s.indexOf(',') >= 0) s = s.replace(',', '.');
+    if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+    return parseFloat(s);
+  }
+
+  /* ── JOURS FÉRIÉS (France métropolitaine, + option Alsace-Moselle) ── */
+  function paques(y) { // algorithme de Meeus/Jones/Butcher
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4,
+      f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+      i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7,
+      m = Math.floor((a + 11 * h + 22 * l) / 451), mo = Math.floor((h + l - 7 * m + 114) / 31),
+      da = ((h + l - 7 * m + 114) % 31) + 1;
+    return mk(y, mo - 1, da);
+  }
+  var _feries = {};
+  function feries(y, alsace) {
+    var key = y + (alsace ? 'A' : '');
+    if (_feries[key]) return _feries[key];
+    var p = paques(y), set = {};
+    [mk(y, 0, 1), addDays(p, 1), mk(y, 4, 1), mk(y, 4, 8), addDays(p, 39), addDays(p, 50),
+     mk(y, 6, 14), mk(y, 7, 15), mk(y, 10, 1), mk(y, 10, 11), mk(y, 11, 25)]
+      .forEach(function (d) { set[toISO(d)] = 1; });
+    if (alsace) { set[toISO(addDays(p, -2))] = 1; set[toISO(mk(y, 11, 26))] = 1; }
+    return (_feries[key] = set);
+  }
+  function isFerie(d, alsace) { return !!feries(d.getFullYear(), alsace)[toISO(d)]; }
+  function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
+  // Jour ouvrable = tous les jours sauf dimanche et jours fériés
+  function isOuvrable(d, alsace) { return d.getDay() !== 0 && !isFerie(d, alsace); }
+  // R1231-1 : délai expirant un samedi, dimanche, jour férié ou chômé → prorogé au 1er jour ouvrable suivant
+  function proroger(d, alsace) {
+    var r = clone(d);
+    while (isWeekend(r) || isFerie(r, alsace)) r = addDays(r, 1);
+    return r;
+  }
+
+  /* ── ANCIENNETÉ ──
+     debut  : date d'ancienneté
+     fin    : dernier jour pris en compte (inclus)
+     Retourne les mois complets + jours restants. */
+  function anciennete(debut, fin) {
+    var end = addDays(fin, 1); // borne exclusive
+    if (cmp(end, debut) <= 0) return { mois: 0, jours: 0, ans: 0, moisReste: 0 };
+    var m = (end.getFullYear() - debut.getFullYear()) * 12 + (end.getMonth() - debut.getMonth());
+    while (m > 0 && cmp(addMonths(debut, m), end) > 0) m--;
+    var jours = diffDays(addMonths(debut, m), end);
+    return { mois: m, jours: jours, ans: Math.floor(m / 12), moisReste: m % 12 };
+  }
+
+  // Date d'ancienneté recalculée : décalée des périodes non prises en compte
+  // exclusions = { mois: n (saisie historique "ded"), jours: n (total des jours à neutraliser) }
+  function dateAncienneteAjustee(debut, exclusions) {
+    exclusions = exclusions || {};
+    var d = clone(debut);
+    if (exclusions.mois > 0) d = addMonths(d, Math.floor(exclusions.mois));
+    if (exclusions.jours > 0) d = addDays(d, Math.round(exclusions.jours));
+    return d;
+  }
+
+  /* ── INDEMNITÉ LÉGALE (R1234-2) ──
+     1/4 de mois par année jusqu'à 10 ans, 1/3 de mois par année au-delà ;
+     années incomplètes : prorata des mois complets. */
+  function indemniteLegale(sref, moisTotal, L) {
+    var seuil = L.seuilTranche * 12;
+    var m1 = Math.min(moisTotal, seuil), m2 = Math.max(moisTotal - seuil, 0);
+    var t1y = Math.floor(m1 / 12), t1m = m1 % 12, t2y = Math.floor(m2 / 12), t2m = m2 % 12;
+    var t1 = sref * L.tauxT1 * t1y, t2 = sref * L.tauxT2 * t2y;
+    var pro = t1m > 0 ? sref * L.tauxT1 * t1m / 12 : sref * L.tauxT2 * t2m / 12;
+    var total = sref * (L.tauxT1 * m1 + L.tauxT2 * m2) / 12;
+    // Calcul exact en centimes quand le salaire a au plus 2 décimales (évite les écarts de virgule flottante)
+    var cents = Math.round(sref * 100);
+    if (Math.abs(cents - sref * 100) < 1e-6 && L.tauxT1 === 1 / 4 && L.tauxT2 === 1 / 3)
+      total = cents * (3 * m1 + 4 * m2) / 144 / 100;
+    return { t1y: t1y, t1: t1, t2y: t2y, t2: t2, proMois: t1m || t2m, proTaux: t1m > 0 ? L.tauxT1 : L.tauxT2,
+             pro: pro, brut: total, total: round2(total) };
+  }
+  function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+  function salaireReference(s12, s3) {
+    return s3 > s12 ? { sref: s3, base: '3m' } : { sref: s12, base: '12m' };
+  }
+
+  /* ── RUPTURE CONVENTIONNELLE : PLANNING ──
+     L1237-13 : rétractation 15 jours calendaires à compter du lendemain de la signature.
+     L1237-14 : instruction 15 jours ouvrables à compter du lendemain de la réception.
+     R1231-1  : délai expirant samedi/dimanche/férié → prorogé au 1er jour ouvrable suivant.
+     Rupture au plus tôt le lendemain de l'homologation (implicite = fin du délai d'instruction). */
+  function planningDepuisSignature(sign, opt) {
+    opt = opt || {};
+    var al = !!opt.alsace;
+    sign = clone(sign);
+    var debutRetrac = addDays(sign, 1);
+    var finRetracBrute = addDays(sign, 15);
+    var finRetrac = proroger(finRetracBrute, al);
+    var envoi = addDays(finRetrac, 1);       // au plus tôt
+    var reception = clone(envoi);             // TéléRC : réception le jour même
+    var n = 0, r = clone(reception), debutInstr = null;
+    while (n < 15) { r = addDays(r, 1); if (isOuvrable(r, al)) { n++; if (n === 1) debutInstr = clone(r); } }
+    var finInstrBrute = r;
+    var finInstr = proroger(finInstrBrute, al);
+    var rupture = addDays(finInstr, 1);
+    return { signature: sign, debutRetrac: debutRetrac, finRetracBrute: finRetracBrute, finRetrac: finRetrac,
+             envoi: envoi, reception: reception, debutInstruction: debutInstr,
+             finInstructionBrute: finInstrBrute, finInstruction: finInstr, ruptureAuPlusTot: rupture };
+  }
+
+  // Date de signature la plus tardive permettant une rupture au plus tard le jour souhaité
+  function planningDepuisSortie(sortie, opt) {
+    sortie = clone(sortie);
+    for (var k = 16; k < 120; k++) {
+      var s = addDays(sortie, -k);
+      var p = planningDepuisSignature(s, opt);
+      if (cmp(p.ruptureAuPlusTot, sortie) <= 0) { p.sortieSouhaitee = sortie; return p; }
+    }
+    return null;
+  }
+
+  return {
+    parseDate: parseDate, parseMontant: parseMontant, addDays: addDays, addMonths: addMonths, cmp: cmp,
+    diffDays: diffDays, toISO: toISO, toFR: toFR, toLong: toLong, JOURS: JOURS, MOIS: MOIS,
+    paques: paques, feries: feries, isFerie: isFerie, isWeekend: isWeekend, isOuvrable: isOuvrable,
+    proroger: proroger, anciennete: anciennete, dateAncienneteAjustee: dateAncienneteAjustee,
+    indemniteLegale: indemniteLegale, salaireReference: salaireReference, round2: round2,
+    planningDepuisSignature: planningDepuisSignature, planningDepuisSortie: planningDepuisSortie
+  };
+})();
+
+</script>
+<script>
+var PAGE_TYPE = 'lic';
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   VARIABLES LÉGALES — ZONE DE MISE À JOUR
+   Modifier uniquement cette section lors d'une évolution législative.
+   Dernière vérification : octobre 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+var LEGAL = {
+  dateVerif    : 'octobre 2026',
+  ancMinMois   : 8,      // L1234-9 : 8 mois ininterrompus (licenciement, hors inaptitude pro)
+  tauxT1       : 1 / 4,  // R1234-2 : 1/4 de mois par année jusqu'à 10 ans
+  tauxT2       : 1 / 3,  // R1234-2 : 1/3 de mois par année au-delà de 10 ans
+  seuilTranche : 10,
+  coefInapt    : 2,      // L1226-14 : indemnité spéciale = double de l'indemnité légale
+  partCPE      : 0.5,    // L1225-54 : congé parental d'éducation à temps plein compté pour moitié
+  contribRC    : 0.40,   // L137-12 CSS (LFSS 2026) : contribution patronale RC
+  pass         : 48060   // PASS 2026 (arrêté du 22/12/2025)
+};
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* PAGE_TYPE ('lic' | 'rc') est défini par la page.
+   Paramètres URL (rétro-compatibles) :
+     communs : de (date ancienneté) df (fin de contrat / rupture) s12 s3
+               arret=1 (arrêt en cours) da (début de l'arrêt) aorig=pro (arrêt AT/MP, sinon non pro)
+               ded (mois à déduire) jmnp jsus jcpe (jours de suspension)
+     lic     : dn (notification) inapt=1 (= inaptitude pro) motif=perso|eco|inapt_np|inapt_pro
+     rc      : ds (signature)
+   Alias historiques : date_entree date_notif date_fin sal12 sal3 */
+var C = PaieCore;
+var IS_LIC = PAGE_TYPE === 'lic';
+var modeActuel = 'manuel';
+var nbMoisGrille = 0;
+
+function el(id) { return document.getElementById(id); }
+function val(id) { var e = el(id); return e ? String(e.value || '').trim() : ''; }
+function fmt(n) { return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
+function fmtDuree(m) {
+  var a = Math.floor(m / 12), r = m % 12, s = '';
+  if (a > 0) s += a + ' an' + (a > 1 ? 's' : '');
+  if (r > 0) s += (s ? ' ' : '') + r + ' mois';
+  return s || '0 mois';
+}
+function entier(id) { var n = C.parseMontant(val(id)); return isNaN(n) || n < 0 ? 0 : Math.round(n); }
+
+/* ── MODES DE SAISIE ── */
+function switchMode(m) {
+  modeActuel = m;
+  el('mode-manuel').style.display = m === 'manuel' ? '' : 'none';
+  el('mode-arret').style.display = m === 'arret' ? '' : 'none';
+  ['manuel', 'auto', 'arret'].forEach(function (k) { el('tab-' + k).classList.toggle('active', k === m); });
+  majGrille();
+  calculer(true);
+}
+
+// Date de référence de la période de salaires
+function dateRefSalaires() {
+  if (modeActuel === 'arret') return C.parseDate(val('i-arret'));
+  if (IS_LIC) return C.parseDate(val('i-notif'));
+  return C.parseDate(val('i-sign')) || C.parseDate(val('i-fin'));
+}
+
+/* ── GRILLE MOIS PAR MOIS ── */
+function majGrille() {
+  var g = el('mode-grille');
+  if (modeActuel === 'manuel') { g.style.display = 'none'; return; }
+  var ref = dateRefSalaires(), entree = C.parseDate(val('i-entree'));
+  if (!ref) { g.style.display = 'none'; return; }
+  g.style.display = '';
+  // Mois civils complets précédant la date de référence (max 12)
+  var n = 12;
+  if (entree) {
+    var diff = (ref.getFullYear() - entree.getFullYear()) * 12 + (ref.getMonth() - entree.getMonth());
+    if (diff < 12) n = Math.max(diff, 1);
+  }
+  var tbody = el('sal-tbody');
+  var anciens = {};
+  for (var k = 0; k < nbMoisGrille; k++) {
+    var a = el('sal-' + k), b = el('prime-' + k);
+    if (a) anciens[a.dataset.mois] = [a.value, b ? b.value : ''];
+  }
+  tbody.innerHTML = '';
+  for (var i = 0; i < n; i++) {
+    var d = new Date(ref.getFullYear(), ref.getMonth() - 1 - i, 1);
+    var key = d.getFullYear() + '-' + d.getMonth(), is3 = i < 3, prev = anciens[key] || ['', ''];
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><span class="mois-label' + (is3 ? ' ref3' : '') + '">' + C.MOIS[d.getMonth()] + ' ' + d.getFullYear() + (is3 ? ' ★' : '') + '</span></td>' +
+      '<td><input class="sal-input" type="text" inputmode="decimal" id="sal-' + i + '" data-mois="' + key + '" placeholder="0,00"></td>' +
+      '<td><input class="sal-input prime-cell" type="text" inputmode="decimal" id="prime-' + i + '" placeholder="' + (is3 ? 'si prime > 3 mois' : '—') + '"' + (is3 ? '' : ' disabled style="opacity:.3"') + '></td>';
+    tbody.appendChild(tr);
+    el('sal-' + i).value = prev[0];
+    if (is3) el('prime-' + i).value = prev[1];
+  }
+  nbMoisGrille = n;
+  el('hint-grille').textContent = n < 12
+    ? 'Ancienneté inférieure à 12 mois : moyenne sur les ' + n + ' mois précédant la date de référence (R1234-4). Mois d\'entrée incomplet : reconstituer un mois plein.'
+    : '';
+}
+
+function moyennesGrille() {
+  var t12 = 0, t3 = 0, manq = 0;
+  for (var i = 0; i < nbMoisGrille; i++) {
+    var v = C.parseMontant(val('sal-' + i));
+    if (isNaN(v) || v < 0) { manq++; continue; }
+    t12 += v;
+    if (i < 3) { var c = C.parseMontant(val('prime-' + i)); t3 += isNaN(c) ? v : c; }
+  }
+  if (manq) return { erreur: 'Renseignez les ' + manq + ' mois manquant(s) du tableau des salaires.' };
+  var n3 = Math.min(3, nbMoisGrille);
+  return { s12: t12 / nbMoisGrille, s3: t3 / n3 };
+}
+
+/* ── AFFICHAGE ── */
+function montrerResultats(ok) { el('resultsSection').classList.toggle('visible', ok); el('top-result').style.display = ok ? '' : 'none'; }
+function erreur(msg, auto) {
+  var e = el('errorMsg');
+  if (!msg) { e.classList.remove('visible'); return; }
+  e.innerHTML = '<strong>⚠ ' + msg + '</strong>';
+  e.classList.add('visible');
+  montrerResultats(false);
+  if (!auto) window.scrollTo({ top: e.offsetTop - 80, behavior: 'smooth' });
+}
+function ligne(sref, taux, unite, res) {
+  return '<span class="f-num">' + fmt(sref) + '</span><span class="f-op">× ' + taux + ' ×</span><span class="f-num">' + unite +
+    '</span><span class="f-op">=</span><span class="f-res">' + fmt(res) + '</span>';
+}
+
+/* ── CALCUL PRINCIPAL ──
+   auto = true : déclenché par l'ouverture de la page ou une saisie (pas de défilement) */
+function calculer(auto) {
+  erreur(null);
+  var motif = IS_LIC ? el('i-motif').value : 'rc';
+  var inaptPro = motif === 'inapt_pro';
+  if (IS_LIC) majMotif();
+
+  // Dates
+  var entree = C.parseDate(val('i-entree'));
+  if (!entree) return erreur("Saisissez la date d'ancienneté.", auto);
+  var notif = null, sign = null, fin;
+  if (IS_LIC) {
+    notif = C.parseDate(val('i-notif'));
+    if (!notif) return erreur('Saisissez la date de notification du licenciement.', auto);
+    if (C.cmp(notif, entree) <= 0) return erreur("La notification doit être postérieure à la date d'ancienneté.", auto);
+    if (inaptPro) fin = notif;
+    else {
+      fin = C.parseDate(val('i-fin'));
+      if (!fin) return erreur('Saisissez la date de fin de préavis (théorique si préavis non exécuté).', auto);
+      if (C.cmp(fin, notif) < 0) return erreur('La fin de préavis ne peut pas précéder la notification.', auto);
+    }
+  } else {
+    sign = C.parseDate(val('i-sign'));
+    fin = C.parseDate(val('i-fin'));
+    if (!fin && sign) { fin = C.planningDepuisSignature(sign).ruptureAuPlusTot; el('i-fin').value = C.toISO(fin); }
+    if (!fin) return erreur('Saisissez la date de rupture (ou la date de signature).', auto);
+    if (sign && C.cmp(sign, entree) <= 0) return erreur("La signature doit être postérieure à la date d'ancienneté.", auto);
+    if (sign) {
+      var mini = C.planningDepuisSignature(sign).ruptureAuPlusTot;
+      if (C.cmp(fin, mini) < 0) return erreur('Date de rupture trop proche de la signature : au plus tôt le ' + C.toFR(mini) + ' (rétractation + homologation).', auto);
+    }
+  }
+  if (C.cmp(fin, entree) <= 0) return erreur("La date de fin doit être postérieure à la date d'ancienneté.", auto);
+
+  // Périodes neutralisées (L1234-11)
+  var jmnp = entier('i-jmnp'), jsus = entier('i-jsus'), jcpe = entier('i-jcpe'), ded = entier('i-mois-ded');
+  var joursExclus = jmnp + jsus + Math.round(jcpe * LEGAL.partCPE);
+  // Arrêt non professionnel en cours : neutralisé jusqu'à la notification (droit) et jusqu'à la fin (montant).
+  // Inaptitude : l'arrêt a pris fin avec l'avis d'inaptitude → ses jours se saisissent dans « jours terminés ».
+  var arret = arretEnCours();
+  var neutraliseArret = arret.debut && arret.origine === 'np' && (motif === 'perso' || motif === 'rc');
+  function joursArret(limite) {
+    if (!neutraliseArret) return 0;
+    var deb = C.cmp(arret.debut, entree) > 0 ? arret.debut : entree;
+    return C.cmp(limite, deb) < 0 ? 0 : C.diffDays(deb, limite) + 1;
+  }
+  var jArretFin = joursArret(fin);
+  var entreeAj = C.dateAncienneteAjustee(entree, { mois: ded, jours: joursExclus + jArretFin });
+
+  // Condition d'ancienneté (licenciement hors inaptitude pro) : appréciée à la notification
+  var ancNotif = null;
+  if (IS_LIC) {
+    var entreeAjNotif = C.dateAncienneteAjustee(entree, { mois: ded, jours: joursExclus + joursArret(notif) });
+    ancNotif = C.cmp(notif, entreeAjNotif) >= 0 ? C.anciennete(entreeAjNotif, notif).mois : 0;
+    if (!inaptPro && ancNotif < LEGAL.ancMinMois)
+      return erreur('Ancienneté insuffisante à la notification (' + fmtDuree(ancNotif) + '). L\'indemnité légale de licenciement requiert ' +
+        LEGAL.ancMinMois + ' mois d\'ancienneté ininterrompue (L1234-9). Exception : inaptitude d\'origine professionnelle.', auto);
+  }
+  var anc = C.cmp(fin, entreeAj) >= 0 ? C.anciennete(entreeAj, fin) : { mois: 0, jours: 0 };
+
+  // Salaires
+  var s12, s3;
+  if (modeActuel === 'manuel') {
+    s12 = C.parseMontant(val('i-s12')); s3 = C.parseMontant(val('i-s3'));
+    if (isNaN(s12) || s12 <= 0) return erreur('Saisissez un salaire brut moyen sur 12 mois valide.', auto);
+    if (isNaN(s3) || s3 <= 0) return erreur('Saisissez un salaire brut moyen sur 3 mois valide.', auto);
+  } else {
+    if (modeActuel === 'arret' && !C.parseDate(val('i-arret'))) return erreur("Saisissez la date de début de l'arrêt de travail.", auto);
+    if (!nbMoisGrille) majGrille();
+    var mg = moyennesGrille();
+    if (mg.erreur) return erreur(mg.erreur, auto);
+    s12 = mg.s12; s3 = mg.s3;
+  }
+  var ref = C.salaireReference(s12, s3);
+  var r = C.indemniteLegale(ref.sref, anc.mois, LEGAL);
+  var total = inaptPro ? C.round2(r.brut * LEGAL.coefInapt) : r.total; // arrondi après doublement
+
+  /* ── AFFICHAGE ── */
+  el('o-dateverif').textContent = LEGAL.dateVerif;
+  el('o-entree').textContent = C.toFR(entree);
+  var nDed = joursExclus > 0 || ded > 0;
+  el('row-ded').style.display = nDed ? '' : 'none';
+  var arretSansDate = arret.coche && !arret.debut && (motif === 'perso' || motif === 'rc');
+  el('row-arret-ded').style.display = jArretFin > 0 || arretSansDate ? '' : 'none';
+  el('o-arret-ded').textContent = arretSansDate ? '⚠ date de début non renseignée (étape 2) — non neutralisé'
+    : '− ' + jArretFin + ' jours (depuis le ' + (jArretFin ? C.toFR(arret.debut) : '') + ')';
+  el('row-entree-aj').style.display = nDed || jArretFin > 0 ? '' : 'none';
+  el('o-ded').textContent = '− ' + [ded ? ded + ' mois' : '', joursExclus ? joursExclus + ' jours' : ''].filter(Boolean).join(' + ');
+  el('o-entree-aj').textContent = C.toFR(entreeAj);
+  if (IS_LIC) {
+    el('o-motif').textContent = el('i-motif').options[el('i-motif').selectedIndex].text;
+    el('o-notif').textContent = C.toFR(notif);
+    el('o-anc-notif').textContent = fmtDuree(ancNotif) + (inaptPro ? ' (pas de condition)' : ' ✓ ≥ 8 mois');
+    el('o-fin-label').textContent = inaptPro ? 'Ancienneté arrêtée à la notification' : 'Fin de préavis';
+  } else {
+    el('o-sign').textContent = sign ? C.toFR(sign) : 'non renseignée';
+    el('o-fin-label').textContent = 'Date de rupture';
+  }
+  el('o-fin').textContent = C.toFR(fin);
+  el('o-anc').textContent = fmtDuree(anc.mois);
+  el('o-s12').textContent = fmt(s12);
+  el('o-s3').textContent = fmt(s3);
+  el('o-sref').textContent = fmt(ref.sref) + (ref.base === '3m' ? ' (moy. 3 mois)' : ' (moy. 12 mois)');
+
+  el('f-t1').innerHTML = ligne(ref.sref, '1/4', r.t1y + ' an' + (r.t1y > 1 ? 's' : ''), r.t1);
+  el('f-t2').innerHTML = r.t2y > 0 ? ligne(ref.sref, '1/3', r.t2y + ' an' + (r.t2y > 1 ? 's' : ''), r.t2)
+    : '<span class="f-zero">Non applicable (ancienneté ≤ 10 ans)</span>';
+  el('f-pro').innerHTML = r.proMois > 0 ? ligne(ref.sref, r.proTaux === LEGAL.tauxT1 ? '1/4' : '1/3', '(' + r.proMois + ' mois ÷ 12)', r.pro)
+    : '<span class="f-zero">Aucun mois incomplet</span>';
+  var detail = fmt(r.t1) + ' + ' + fmt(r.t2) + ' + ' + fmt(r.pro) + ' = ' + fmt(r.total);
+  if (IS_LIC) {
+    el('f-inapt-block').style.display = inaptPro ? '' : 'none';
+    el('o-inapt-badge').style.display = inaptPro ? 'inline-block' : 'none';
+    el('note-inapt').style.display = inaptPro ? '' : 'none';
+    el('o-result-label').textContent = inaptPro ? 'Indemnité spéciale de licenciement minimale' : 'Indemnité légale minimale';
+    if (inaptPro) {
+      el('f-inapt').innerHTML = '<span class="f-num">' + fmt(r.total) + '</span><span class="f-op">× 2 =</span><span class="f-res">' + fmt(total) + '</span>';
+      detail += ' × 2 = ' + fmt(total);
+    }
+  } else {
+    el('o-contrib').textContent = Math.round(LEGAL.contribRC * 100) + ' %';
+    el('o-2pass').textContent = fmt(2 * LEGAL.pass);
+  }
+  el('o-total').textContent = fmt(total);
+  el('top-result-amount').textContent = fmt(total);
+  el('top-result-label').textContent = IS_LIC ? (inaptPro ? 'Indemnité spéciale minimale' : 'Indemnité légale minimale') : 'Indemnité spécifique minimale de RC';
+  el('o-detail').textContent = detail;
+  montrerResultats(true);
+  if (!auto) setTimeout(function () { el('cardResult').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+  return total;
+}
+
+function arretEnCours() {
+  var coche = el('i-arret-encours').checked;
+  el('grp-arret-encours').style.display = coche ? '' : 'none';
+  el('hint-manuel-arret').style.display = coche ? '' : 'none';
+  var motif = IS_LIC ? el('i-motif').value : 'rc', origine = el('i-orig-arret').value;
+  el('hint-arret-encours').textContent = !coche ? '' :
+    (motif === 'inapt_np' || motif === 'inapt_pro')
+      ? "Inaptitude : l'arrêt a pris fin avec l'avis d'inaptitude ; saisissez ses jours dans « jours d'arrêt terminés » s'il est d'origine non professionnelle."
+      : origine === 'np' ? "La durée de l'arrêt est retirée de l'ancienneté (L1234-11), jusqu'à la notification pour la condition des 8 mois et jusqu'à la fin du contrat pour le montant."
+      : "Arrêt AT/MP : compté dans l'ancienneté (L1226-7).";
+  return { coche: coche, debut: coche ? C.parseDate(val('i-debut-arret')) : null, origine: origine };
+}
+
+function majMotif() {
+  var m = el('i-motif').value;
+  el('grp-fin').style.display = m === 'inapt_pro' ? 'none' : '';
+  el('hint-motif').textContent = {
+    perso: 'Faute grave ou lourde : pas d\'indemnité légale. Condition : 8 mois d\'ancienneté à la notification.',
+    inapt_np: 'Préavis non exécuté ni payé, mais sa durée compte dans l\'ancienneté (L1226-4) : indiquer la fin théorique du préavis.',
+    inapt_pro: 'Indemnité spéciale = double de l\'indemnité légale, sans condition d\'ancienneté ; ancienneté arrêtée à la notification (L1226-14).'
+  }[m];
+}
+
+/* ── INIT : pré-remplissage depuis l'URL puis calcul automatique ── */
+(function init() {
+  var p = new URLSearchParams(window.location.search);
+  function gp() { for (var i = 0; i < arguments.length; i++) { var v = p.get(arguments[i]); if (v && v.trim()) return v.trim(); } return null; }
+  function setDate(id, keys) {
+    var raw = gp.apply(null, keys); if (!raw) return true;
+    var d = C.parseDate(raw); if (d) { el(id).value = C.toISO(d); return true; }
+    return raw;
+  }
+  var invalides = [];
+  [['i-entree', ['de', 'date_entree']], ['i-fin', ['df', 'date_fin']], ['i-arret', ['da', 'date_arret']]]
+    .concat(IS_LIC ? [['i-notif', ['dn', 'date_notif']]] : [['i-sign', ['ds', 'date_signature']]])
+    .forEach(function (x) { var r = setDate(x[0], x[1]); if (r !== true) invalides.push(r); });
+
+  if (IS_LIC) {
+    var motif = (gp('motif') || '').toLowerCase();
+    if (motif === 'eco') motif = 'perso';
+    if (gp('inapt') === '1') motif = 'inapt_pro';
+    if (['perso', 'inapt_np', 'inapt_pro'].indexOf(motif) >= 0) el('i-motif').value = motif;
+  }
+  ['jmnp', 'jsus', 'jcpe'].forEach(function (k) { var v = gp(k); if (v) el('i-' + k).value = v; });
+  var ded = gp('ded'); if (ded) el('i-mois-ded').value = ded;
+
+  var s12 = gp('s12', 'sal12'), s3 = gp('s3', 'sal3'), arret = gp('arret') === '1';
+  if (arret) el('i-arret-encours').checked = true;
+  if (el('i-arret').value) el('i-debut-arret').value = el('i-arret').value;
+  if ((gp('aorig') || '').toLowerCase() === 'pro') el('i-orig-arret').value = 'pro';
+  if (s12) el('i-s12').value = s12;
+  if (s3) el('i-s3').value = s3;
+  if (s12 || s3) modeActuel = 'manuel';
+  else if (arret) modeActuel = 'arret';
+  else if (p.toString()) modeActuel = 'auto';
+
+  switchMode(modeActuel); // affiche + calcule
+  if (invalides.length) erreur('Date(s) invalide(s) dans le lien : « ' + invalides.join(' », « ').replace(/</g, '&lt;') + ' ». Format attendu JJ/MM/AAAA.', true);
+
+  // Recalcul automatique à chaque saisie
+  var t = null;
+  function relance(e) {
+    if (e && e.target && /^i-(entree|notif|sign|fin|arret)$/.test(e.target.id)) majGrille();
+    clearTimeout(t); t = setTimeout(function () { calculer(true); }, 250);
+  }
+  document.querySelector('.layout').addEventListener('input', relance);
+  document.querySelector('.layout').addEventListener('change', relance);
+})();
+
+</script>
+</body>
+</html>
